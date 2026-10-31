@@ -1,0 +1,150 @@
+import { useState, type FormEvent } from "react";
+import { Link } from "react-router-dom";
+import LoadingButton from "../components/LoadingButton";
+
+import { changePassword } from "../services/api";
+
+export default function ChangePassword() {
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    setError("");
+    setSuccess("");
+
+    if (newPassword !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    if (newPassword === currentPassword) {
+      setError("New password must be different.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      await changePassword({
+        currentPassword,
+        newPassword,
+      });
+
+      setSuccess("Password changed successfully.");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to change password.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-[#090d16] px-4 py-12">
+      <div className="w-full max-w-md">
+        <Link
+          to="/"
+          className="mb-8 block text-center text-3xl font-black text-white"
+        >
+          TECH<span className="text-blue-500">ZONE</span>
+        </Link>
+
+        <div className="rounded-3xl border border-white/10 bg-[#101622] p-8 shadow-2xl sm:p-10">
+          <h1 className="text-center text-3xl font-bold text-white">
+            Change Password
+          </h1>
+
+          <p className="mt-3 text-center text-sm text-gray-400">
+            Update your account password
+          </p>
+
+          <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+            {(
+              [
+                [
+                  "current",
+                  "Current Password",
+                  currentPassword,
+                  setCurrentPassword,
+                ],
+                ["new", "New Password", newPassword, setNewPassword],
+                [
+                  "confirm",
+                  "Confirm New Password",
+                  confirmPassword,
+                  setConfirmPassword,
+                ],
+              ] as const
+            ).map(([id, label, value, setter]) => (
+              <div key={id}>
+                <label
+                  htmlFor={id}
+                  className="mb-2 block text-sm font-medium text-gray-300"
+                >
+                  {label}
+                </label>
+
+                <input
+                  id={id}
+                  type="password"
+                  value={value}
+                  onChange={(event) => setter(event.target.value)}
+                  required
+                  autoComplete={
+                    id === "current" ? "current-password" : "new-password"
+                  }
+                  className="w-full rounded-xl border border-white/10 bg-[#090d16] px-4 py-3.5 text-white outline-none transition focus:border-blue-500"
+                />
+              </div>
+            ))}
+
+            {error && (
+              <p
+                role="alert"
+                className="rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-400"
+              >
+                {error}
+              </p>
+            )}
+
+            {success && (
+              <p
+                role="status"
+                className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-sm text-emerald-400"
+              >
+                {success}
+              </p>
+            )}
+
+            <LoadingButton
+              type="submit"
+              loading={loading}
+              loadingText="Updating Password..."
+              className="w-full"
+            >
+              Change Password
+            </LoadingButton>
+          </form>
+
+          <Link
+            to="/profile"
+            className="mt-7 block text-center text-sm text-blue-400 transition hover:text-blue-300"
+          >
+            ← Back to Profile
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
