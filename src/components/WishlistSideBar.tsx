@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import type { Product } from "../types/product";
 import ButtonSpinner from "./ButtonSpinner";
@@ -45,8 +44,8 @@ export default function WishlistSidebar({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100]">
-      {/* Overlay */}
+    <div className="fixed inset-0 z-[100] overflow-hidden">
+      {/* OVERLAY */}
       <button
         type="button"
         aria-label="Close wishlist"
@@ -54,21 +53,19 @@ export default function WishlistSidebar({
         className="absolute inset-0 h-full w-full bg-black/70 backdrop-blur-sm"
       />
 
-      {/* Sidebar */}
+      {/* SIDEBAR */}
       <aside
         role="dialog"
         aria-modal="true"
         aria-label="Wishlist"
-        className="absolute right-0 top-0 flex h-full w-full max-w-md flex-col border-l border-white/10 bg-[#101622] text-white shadow-2xl"
+        className="absolute inset-y-0 right-0 flex h-full w-full min-w-0 max-w-md flex-col overflow-hidden border-l border-white/10 bg-[#101622] text-white shadow-2xl"
       >
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-white/10 px-6 py-6">
-          <div>
-            <h2 className="text-2xl font-bold">
-              My Wishlist
-            </h2>
+        {/* HEADER */}
+        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 px-4 py-4 sm:px-6 sm:py-6">
+          <div className="min-w-0">
+            <h2 className="text-xl font-bold sm:text-2xl">My Wishlist</h2>
 
-            <p className="mt-1 text-sm text-gray-400">
+            <p className="mt-1 text-xs text-gray-400 sm:text-sm">
               {products.length} favorite products
             </p>
           </div>
@@ -77,18 +74,18 @@ export default function WishlistSidebar({
             type="button"
             onClick={onClose}
             aria-label="Close wishlist"
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-xl text-gray-400 transition hover:border-blue-500 hover:text-white"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 text-xl text-gray-400 transition hover:border-blue-500 hover:text-white"
           >
             ×
           </button>
         </div>
 
-        {/* Wishlist Products */}
-        <div className="flex-1 space-y-4 overflow-y-auto p-6">
+        {/* WISHLIST PRODUCTS */}
+        <div className="min-h-0 min-w-0 flex-1 space-y-4 overflow-y-auto overscroll-contain p-3 sm:p-6">
           {error && (
             <p
               role="alert"
-              className="rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-400"
+              className="break-words rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-400"
             >
               {error}
             </p>
@@ -112,7 +109,7 @@ export default function WishlistSidebar({
               </p>
             </div>
           ) : products.length === 0 ? (
-            <div className="flex h-full flex-col items-center justify-center text-center">
+            <div className="flex h-full flex-col items-center justify-center px-2 text-center">
               <span className="text-6xl">♡</span>
 
               <h3 className="mt-5 text-xl font-semibold">
@@ -133,34 +130,33 @@ export default function WishlistSidebar({
             </div>
           ) : (
             products.map((product) => {
-              const isRemoving =
-                updatingFavoriteId === product.id;
+              const isRemoving = updatingFavoriteId === product.id;
 
-              const isAdding =
-                addingToCartId === product.id;
+              const isAdding = addingToCartId === product.id;
 
               return (
                 <div
                   key={product.id}
-                  className="rounded-2xl border border-white/10 bg-[#090d16] p-4"
+                  className="min-w-0 overflow-hidden rounded-2xl border border-white/10 bg-[#090d16] p-3 sm:p-4"
                 >
-                  <div className="flex gap-4">
+                  {/* PRODUCT INFORMATION */}
+                  <div className="flex min-w-0 gap-3 sm:gap-4">
                     <img
                       src={product.imageUrl}
                       alt={product.name}
-                      className="h-24 w-24 shrink-0 rounded-xl bg-white object-contain p-2"
+                      className="h-20 w-20 shrink-0 rounded-xl bg-white object-contain p-2 sm:h-24 sm:w-24"
                     />
 
                     <div className="min-w-0 flex-1">
-                      <h3 className="line-clamp-2 text-sm font-semibold text-white">
+                      <h3 className="line-clamp-2 break-words text-sm font-semibold text-white">
                         {product.name}
                       </h3>
 
-                      <p className="mt-1 text-xs text-gray-500">
+                      <p className="mt-1 truncate text-xs text-gray-500">
                         {product.brand}
                       </p>
 
-                      <p className="mt-2 text-sm font-bold text-blue-400">
+                      <p className="mt-2 break-words text-sm font-bold text-blue-400">
                         ₾{product.price.toLocaleString()}
                       </p>
 
@@ -182,12 +178,11 @@ export default function WishlistSidebar({
                     </div>
                   </div>
 
-                  <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-4">
+                  {/* STOCK AND ADD TO CART */}
+                  <div className="mt-4 flex min-w-0 flex-col gap-3 border-t border-white/10 pt-4 sm:flex-row sm:items-center sm:justify-between">
                     <span
                       className={`text-xs ${
-                        product.stock > 0
-                          ? "text-emerald-400"
-                          : "text-red-400"
+                        product.stock > 0 ? "text-emerald-400" : "text-red-400"
                       }`}
                     >
                       {product.stock > 0
@@ -197,12 +192,9 @@ export default function WishlistSidebar({
 
                     <button
                       type="button"
-                      disabled={
-                        product.stock <= 0 ||
-                        addingToCartId !== null
-                      }
+                      disabled={product.stock <= 0 || addingToCartId !== null}
                       onClick={() => onAddToCart(product)}
-                      className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                     >
                       {isAdding ? (
                         <>
@@ -220,8 +212,8 @@ export default function WishlistSidebar({
           )}
         </div>
 
-        {/* Footer */}
-        <div className="border-t border-white/10 bg-[#0c111d] p-6">
+        {/* FOOTER */}
+        <div className="shrink-0 border-t border-white/10 bg-[#0c111d] p-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:p-6">
           <button
             type="button"
             onClick={onClose}

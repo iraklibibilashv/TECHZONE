@@ -69,26 +69,33 @@ export default function VerifyEmail() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#090d16] px-4 py-12">
-      <div className="w-full max-w-md">
+    <div className="flex min-h-screen w-full min-w-0 items-center justify-center bg-[#090d16] px-4 py-8 sm:py-12">
+      <div className="w-full min-w-0 max-w-md">
+        {/* LOGO */}
         <Link
           to="/"
-          className="mb-8 block text-center text-3xl font-black text-white"
+          className="mb-6 block text-center text-2xl font-black text-white sm:mb-8 sm:text-3xl"
         >
           TECH<span className="text-blue-500">ZONE</span>
         </Link>
 
-        <div className="rounded-3xl border border-white/10 bg-[#101622] p-8 shadow-2xl sm:p-10">
-          <div className="mb-8 text-center">
-            <h1 className="text-3xl font-bold text-white">Verify Your Email</h1>
+        {/* VERIFICATION CARD */}
+        <div className="min-w-0 rounded-2xl border border-white/10 bg-[#101622] p-5 shadow-2xl sm:rounded-3xl sm:p-10">
+          {/* HEADER */}
+          <div className="mb-6 text-center sm:mb-8">
+            <h1 className="text-2xl font-bold text-white sm:text-3xl">
+              Verify Your Email
+            </h1>
 
-            <p className="mt-3 text-sm text-gray-400">
+            <p className="mt-3 text-sm leading-6 text-gray-400">
               Enter the verification code sent to your email address.
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
+          {/* VERIFICATION FORM */}
+          <form onSubmit={handleSubmit} className="min-w-0 space-y-5">
+            {/* EMAIL */}
+            <div className="min-w-0">
               <label
                 htmlFor="email"
                 className="mb-2 block text-sm font-medium text-gray-300"
@@ -104,11 +111,12 @@ export default function VerifyEmail() {
                 placeholder="you@example.com"
                 autoComplete="email"
                 required
-                className="w-full rounded-xl border border-white/10 bg-[#090d16] px-4 py-3.5 text-white outline-none transition placeholder:text-gray-600 focus:border-blue-500"
+                className="block w-full min-w-0 max-w-full rounded-xl border border-white/10 bg-[#090d16] px-4 py-3.5 text-base text-white outline-none transition placeholder:text-gray-600 focus:border-blue-500 sm:text-sm"
               />
             </div>
 
-            <div>
+            {/* VERIFICATION CODE */}
+            <div className="min-w-0">
               <label
                 htmlFor="code"
                 className="mb-2 block text-sm font-medium text-gray-300"
@@ -123,29 +131,34 @@ export default function VerifyEmail() {
                 onChange={(e) => setCode(e.target.value)}
                 placeholder="Enter verification code"
                 autoComplete="one-time-code"
+                autoCapitalize="none"
+                spellCheck={false}
                 required
-                className="w-full rounded-xl border border-white/10 bg-[#090d16] px-4 py-3.5 text-white outline-none transition placeholder:text-gray-600 focus:border-blue-500"
+                className="block w-full min-w-0 max-w-full rounded-xl border border-white/10 bg-[#090d16] px-4 py-3.5 text-base text-white outline-none transition placeholder:text-gray-600 focus:border-blue-500 sm:text-sm"
               />
             </div>
 
+            {/* ERROR MESSAGE */}
             {error && (
               <p
                 role="alert"
-                className="rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-400"
+                className="break-words rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-400"
               >
                 {error}
               </p>
             )}
 
+            {/* SUCCESS MESSAGE */}
             {message && (
               <p
                 role="status"
-                className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-sm text-emerald-400"
+                className="break-words rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-sm text-emerald-400"
               >
                 {message}
               </p>
             )}
 
+            {/* VERIFY BUTTON */}
             <LoadingButton
               type="submit"
               loading={loading}
@@ -156,6 +169,7 @@ export default function VerifyEmail() {
             </LoadingButton>
           </form>
 
+          {/* RESEND CODE */}
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-400">Didn't receive the code?</p>
 
@@ -163,22 +177,24 @@ export default function VerifyEmail() {
               type="button"
               onClick={handleResend}
               disabled={loading || resending}
-              className="mt-2 text-sm font-semibold text-blue-400 transition hover:text-blue-300 disabled:opacity-60"
+              className="mt-2 inline-flex min-h-10 items-center justify-center px-3 text-sm font-semibold text-blue-400 transition hover:text-blue-300 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {resending ? "Sending..." : "Resend Code"}
             </button>
           </div>
 
-          <p className="mt-7 text-center text-sm text-gray-400">
+          {/* LOGIN LINK */}
+          <p className="mt-7 break-words text-center text-sm leading-6 text-gray-400">
             Already verified?{" "}
             <Link
               to="/login"
-              className="font-semibold text-blue-400 hover:text-blue-300"
+              className="font-semibold text-blue-400 transition hover:text-blue-300"
             >
               Sign In
             </Link>
           </p>
 
+          {/* BACK TO STORE */}
           <Link
             to="/"
             className="mt-6 block text-center text-sm text-gray-500 transition hover:text-white"

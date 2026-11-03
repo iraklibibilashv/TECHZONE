@@ -6,7 +6,6 @@ import ConfirmModal from "../../components/ConfirmModal";
 import SpecificationEditor from "../../components/admin/SpecificationEditor";
 
 import { getProducts, getCategories } from "../../services/api";
-
 import {
   createProduct,
   updateProduct,
@@ -48,7 +47,7 @@ const emptyForm: ProductForm = {
 };
 
 const inputClass =
-  "w-full rounded-xl border border-white/10 bg-[#090d16] px-4 py-3 text-white outline-none transition placeholder:text-gray-600 focus:border-blue-500";
+  "block w-full min-w-0 max-w-full rounded-xl border border-white/10 bg-[#090d16] px-4 py-3 text-base text-white outline-none transition placeholder:text-gray-600 focus:border-blue-500 sm:text-sm";
 
 const labelClass = "mb-2 block text-sm font-medium text-gray-300";
 
@@ -299,23 +298,23 @@ export default function AdminProducts() {
   }
 
   return (
-    <div className="min-h-screen bg-[#090d16] text-white">
+    <div className="min-h-screen w-full min-w-0 bg-[#090d16] text-white">
       <AdminSidebar />
 
-      <main className="lg:ml-72">
-        <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 lg:px-10 lg:py-12">
+      <main className="min-w-0 lg:ml-72">
+        <div className="mx-auto w-full min-w-0 max-w-7xl px-4 py-6 sm:px-8 sm:py-8 lg:px-10 lg:py-12">
           {/* HEADER */}
-          <div className="mb-8 flex flex-wrap items-center justify-between gap-5">
-            <div>
+          <div className="mb-8 flex flex-col items-start gap-5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+            <div className="min-w-0">
               <p className="mb-2 text-sm font-semibold text-blue-400">
                 TECHZONE ADMIN
               </p>
 
-              <h1 className="text-3xl font-black sm:text-4xl">
+              <h1 className="text-2xl font-black sm:text-4xl">
                 Products Management
               </h1>
 
-              <p className="mt-3 text-gray-400">
+              <p className="mt-3 text-sm text-gray-400">
                 Manage products, pricing, stock and details.
               </p>
             </div>
@@ -323,7 +322,7 @@ export default function AdminProducts() {
             <button
               type="button"
               onClick={openCreate}
-              className="rounded-xl bg-blue-600 px-6 py-3 font-semibold transition hover:bg-blue-500"
+              className="w-full rounded-xl bg-blue-600 px-6 py-3 font-semibold transition hover:bg-blue-500 sm:w-auto"
             >
               + Add Product
             </button>
@@ -333,7 +332,7 @@ export default function AdminProducts() {
           {error && (
             <div
               role="alert"
-              className="mb-6 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-400"
+              className="mb-6 break-words rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-400"
             >
               {error}
             </div>
@@ -342,14 +341,14 @@ export default function AdminProducts() {
           {success && (
             <div
               role="status"
-              className="mb-6 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-sm text-emerald-400"
+              className="mb-6 break-words rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-sm text-emerald-400"
             >
               {success}
             </div>
           )}
 
           {/* STATISTICS */}
-          <div className="mb-8 grid gap-5 sm:grid-cols-3">
+          <div className="mb-8 grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-5">
             {[
               {
                 label: "Total Products",
@@ -369,7 +368,7 @@ export default function AdminProducts() {
             ].map((stat) => (
               <div
                 key={stat.label}
-                className="rounded-2xl border border-white/10 bg-[#101622] p-6"
+                className="min-w-0 rounded-2xl border border-white/10 bg-[#101622] p-5 sm:p-6"
               >
                 <p className="text-sm text-gray-400">{stat.label}</p>
 
@@ -381,7 +380,7 @@ export default function AdminProducts() {
           </div>
 
           {/* FILTERS */}
-          <div className="mb-6 flex flex-col gap-4 rounded-2xl border border-white/10 bg-[#101622] p-5 sm:flex-row">
+          <div className="mb-6 flex min-w-0 flex-col gap-4 rounded-2xl border border-white/10 bg-[#101622] p-4 sm:flex-row sm:p-5">
             <input
               type="search"
               value={search}
@@ -407,8 +406,13 @@ export default function AdminProducts() {
             </select>
           </div>
 
+          {/* MOBILE TABLE HINT */}
+          <p className="mb-3 text-xs text-gray-500 lg:hidden">
+            Swipe horizontally to view all product details →
+          </p>
+
           {/* PRODUCTS TABLE */}
-          <div className="overflow-x-auto rounded-2xl border border-white/10 bg-[#101622]">
+          <div className="w-full min-w-0 overflow-x-auto overscroll-x-contain rounded-2xl border border-white/10 bg-[#101622]">
             <table className="w-full min-w-[850px] text-left">
               <thead className="border-b border-white/10 bg-white/[0.03]">
                 <tr className="text-xs uppercase tracking-wider text-gray-400">
@@ -460,7 +464,7 @@ export default function AdminProducts() {
                               {product.name}
                             </p>
 
-                            <p className="mt-1 text-xs text-gray-400">
+                            <p className="mt-1 max-w-[220px] truncate text-xs text-gray-400">
                               {product.brand} · {product.model}
                             </p>
 
@@ -521,16 +525,19 @@ export default function AdminProducts() {
 
       {/* ADD / EDIT MODAL */}
       {formOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 px-4 py-8 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 px-3 py-3 backdrop-blur-sm sm:px-4 sm:py-8">
           <div
             role="dialog"
             aria-modal="true"
             aria-labelledby="product-form-title"
-            className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-3xl border border-white/10 bg-[#101622] p-7 shadow-2xl"
+            className="max-h-[calc(100dvh-1.5rem)] w-full min-w-0 max-w-3xl overflow-x-hidden overflow-y-auto overscroll-contain rounded-2xl border border-white/10 bg-[#101622] p-4 shadow-2xl sm:max-h-[90vh] sm:rounded-3xl sm:p-7"
           >
-            <div className="mb-7 flex items-start justify-between gap-4">
-              <div>
-                <h2 id="product-form-title" className="text-2xl font-bold">
+            <div className="mb-6 flex items-start justify-between gap-4 sm:mb-7">
+              <div className="min-w-0">
+                <h2
+                  id="product-form-title"
+                  className="text-xl font-bold sm:text-2xl"
+                >
                   {editingProduct ? "Edit Product" : "Add New Product"}
                 </h2>
 
@@ -544,7 +551,7 @@ export default function AdminProducts() {
                 disabled={saving}
                 onClick={closeForm}
                 aria-label="Close form"
-                className="text-xl text-gray-400 hover:text-white disabled:opacity-50"
+                className="shrink-0 text-xl text-gray-400 hover:text-white disabled:opacity-50"
               >
                 ✕
               </button>
@@ -557,8 +564,8 @@ export default function AdminProducts() {
                   Basic Information
                 </h3>
 
-                <div className="grid gap-5 sm:grid-cols-2">
-                  <div className="sm:col-span-2">
+                <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
+                  <div className="min-w-0 sm:col-span-2">
                     <label htmlFor="product-name" className={labelClass}>
                       Product Name
                     </label>
@@ -573,7 +580,7 @@ export default function AdminProducts() {
                     />
                   </div>
 
-                  <div>
+                  <div className="min-w-0">
                     <label htmlFor="product-brand" className={labelClass}>
                       Brand
                     </label>
@@ -588,7 +595,7 @@ export default function AdminProducts() {
                     />
                   </div>
 
-                  <div>
+                  <div className="min-w-0">
                     <label htmlFor="product-model" className={labelClass}>
                       Model
                     </label>
@@ -603,7 +610,7 @@ export default function AdminProducts() {
                     />
                   </div>
 
-                  <div className="sm:col-span-2">
+                  <div className="min-w-0 sm:col-span-2">
                     <label htmlFor="product-description" className={labelClass}>
                       Description
                     </label>
@@ -628,8 +635,8 @@ export default function AdminProducts() {
                   Pricing & Inventory
                 </h3>
 
-                <div className="grid gap-5 sm:grid-cols-3">
-                  <div>
+                <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-5">
+                  <div className="min-w-0">
                     <label htmlFor="product-price" className={labelClass}>
                       Price (₾)
                     </label>
@@ -646,7 +653,7 @@ export default function AdminProducts() {
                     />
                   </div>
 
-                  <div>
+                  <div className="min-w-0">
                     <label htmlFor="product-stock" className={labelClass}>
                       Stock
                     </label>
@@ -663,7 +670,7 @@ export default function AdminProducts() {
                     />
                   </div>
 
-                  <div>
+                  <div className="min-w-0">
                     <label htmlFor="product-category" className={labelClass}>
                       Category
                     </label>
@@ -689,14 +696,14 @@ export default function AdminProducts() {
                 </div>
               </div>
 
-              {/* IMAGES */}
+              {/* PRODUCT IMAGES */}
               <div>
                 <h3 className="mb-4 border-b border-white/10 pb-3 font-semibold text-blue-400">
                   Product Images
                 </h3>
 
                 <div className="space-y-5">
-                  <div>
+                  <div className="min-w-0">
                     <label htmlFor="product-image" className={labelClass}>
                       Main Image URL
                     </label>
@@ -712,7 +719,7 @@ export default function AdminProducts() {
                     />
                   </div>
 
-                  <div>
+                  <div className="min-w-0">
                     <label htmlFor="product-images" className={labelClass}>
                       Additional Image URLs
                     </label>
@@ -746,7 +753,7 @@ export default function AdminProducts() {
               </div>
 
               {/* SPECIFICATIONS */}
-              <div className="border-t border-white/10 pt-6">
+              <div className="min-w-0 border-t border-white/10 pt-6">
                 <SpecificationEditor
                   value={specifications}
                   onChange={setSpecifications}
@@ -755,18 +762,18 @@ export default function AdminProducts() {
 
               {/* FORM ERROR */}
               {error && (
-                <p role="alert" className="text-sm text-red-400">
+                <p role="alert" className="break-words text-sm text-red-400">
                   {error}
                 </p>
               )}
 
               {/* ACTIONS */}
-              <div className="flex justify-end gap-3 border-t border-white/10 pt-6">
+              <div className="flex flex-col-reverse gap-3 border-t border-white/10 pt-6 sm:flex-row sm:justify-end">
                 <button
                   type="button"
                   disabled={saving}
                   onClick={closeForm}
-                  className="rounded-xl border border-white/10 px-5 py-3 font-semibold text-gray-300 transition hover:bg-white/5 disabled:opacity-50"
+                  className="w-full rounded-xl border border-white/10 px-5 py-3 font-semibold text-gray-300 transition hover:bg-white/5 disabled:opacity-50 sm:w-auto"
                 >
                   Cancel
                 </button>
@@ -774,7 +781,7 @@ export default function AdminProducts() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="rounded-xl bg-blue-600 px-6 py-3 font-semibold transition hover:bg-blue-500 disabled:opacity-50"
+                  className="w-full rounded-xl bg-blue-600 px-6 py-3 font-semibold transition hover:bg-blue-500 disabled:opacity-50 sm:w-auto"
                 >
                   {saving
                     ? "Saving..."

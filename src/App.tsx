@@ -716,7 +716,7 @@ function HomePage({ isLoggedIn, onLogout }: HomePageProps) {
   const favoriteIds = favorites.map((product) => product.id);
 
   return (
-    <div className="min-h-screen bg-[#090d16] text-white">
+    <div className="min-h-screen w-full min-w-0 bg-[#090d16] text-white">
       <Header
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
@@ -728,7 +728,7 @@ function HomePage({ isLoggedIn, onLogout }: HomePageProps) {
         onWishlistClick={openWishlist}
       />
 
-      <main>
+      <main className="w-full min-w-0">
         <Hero onViewAllProducts={handleViewAllProducts} />
 
         <Categories

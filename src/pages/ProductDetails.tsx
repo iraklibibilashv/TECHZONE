@@ -18,6 +18,7 @@ export default function ProductDetails() {
       try {
         setLoading(true);
         setError("");
+        setProduct(null);
 
         const products = await getProducts();
 
@@ -61,12 +62,14 @@ export default function ProductDetails() {
 
   if (error || !product) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-5 bg-[#090d16] text-white">
-        <h1 className="text-2xl font-bold">{error || "Product not found."}</h1>
+      <div className="flex min-h-screen flex-col items-center justify-center gap-5 bg-[#090d16] px-4 text-center text-white">
+        <h1 className="break-words text-xl font-bold sm:text-2xl">
+          {error || "Product not found."}
+        </h1>
 
         <Link
           to="/"
-          className="rounded-xl bg-blue-600 px-6 py-3 font-semibold hover:bg-blue-500"
+          className="rounded-xl bg-blue-600 px-6 py-3 font-semibold transition hover:bg-blue-500"
         >
           Back to Products
         </Link>
@@ -75,8 +78,8 @@ export default function ProductDetails() {
   }
 
   return (
-    <div className="min-h-screen bg-[#090d16] text-white">
-      <div className="mx-auto max-w-7xl px-6 py-10">
+    <div className="min-h-screen w-full min-w-0 bg-[#090d16] text-white">
+      <div className="mx-auto w-full min-w-0 max-w-7xl px-4 py-6 sm:px-6 sm:py-10">
         {/* BACK BUTTON */}
         <Link
           to="/"
@@ -86,32 +89,35 @@ export default function ProductDetails() {
         </Link>
 
         {/* PRODUCT DETAILS */}
-        <div className="mt-10 grid gap-10 lg:grid-cols-2">
+        <div className="mt-6 grid min-w-0 grid-cols-1 gap-6 sm:mt-10 sm:gap-8 lg:grid-cols-2 lg:gap-10">
           {/* PRODUCT IMAGE */}
-          <div className="flex min-h-[400px] items-center justify-center overflow-hidden rounded-3xl border border-white/10 bg-[#101622] p-10">
+          <div className="flex min-h-[260px] min-w-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-[#101622] p-4 sm:min-h-[350px] sm:rounded-3xl sm:p-8 lg:min-h-[400px] lg:p-10">
             <img
               src={product.imageUrl}
               alt={product.name}
-              className="max-h-[400px] w-full object-contain"
+              className="max-h-[260px] w-full max-w-full object-contain sm:max-h-[350px] lg:max-h-[400px]"
             />
           </div>
 
           {/* PRODUCT INFO */}
-          <div className="flex flex-col justify-center">
-            <p className="text-sm font-semibold uppercase tracking-widest text-blue-400">
+          <div className="flex min-w-0 flex-col justify-center">
+            {/* CATEGORY */}
+            <p className="break-words text-xs font-semibold uppercase tracking-widest text-blue-400 sm:text-sm">
               {product.category.name}
             </p>
 
-            <h1 className="mt-4 text-3xl font-black md:text-4xl">
+            {/* PRODUCT NAME */}
+            <h1 className="mt-4 break-words text-2xl font-black leading-tight sm:text-3xl md:text-4xl">
               {product.name}
             </h1>
 
-            <p className="mt-3 text-lg text-gray-400">
+            {/* BRAND AND MODEL */}
+            <p className="mt-3 break-words text-sm text-gray-400 sm:text-lg">
               {product.brand} · {product.model}
             </p>
 
             {/* RATING */}
-            <div className="mt-6 flex items-center gap-3">
+            <div className="mt-6 flex flex-wrap items-center gap-3">
               <span className="text-xl text-amber-400">★</span>
 
               <span className="text-lg font-bold">
@@ -124,7 +130,7 @@ export default function ProductDetails() {
             {/* STOCK */}
             <div className="mt-5">
               <span
-                className={`inline-flex rounded-lg px-4 py-2 text-sm font-semibold ${
+                className={`inline-flex max-w-full break-words rounded-lg px-4 py-2 text-sm font-semibold ${
                   product.stock > 0
                     ? "bg-emerald-500/10 text-emerald-400"
                     : "bg-red-500/10 text-red-400"
@@ -137,45 +143,61 @@ export default function ProductDetails() {
             </div>
 
             {/* PRICE */}
-            <div className="mt-8 border-t border-white/10 pt-8">
+            <div className="mt-6 min-w-0 border-t border-white/10 pt-6 sm:mt-8 sm:pt-8">
               <p className="text-sm text-gray-400">Price</p>
 
-              <p className="mt-2 text-4xl font-black text-blue-400">
+              <p className="mt-2 break-words text-3xl font-black text-blue-400 sm:text-4xl">
                 ₾{product.price.toLocaleString("en-US")}
               </p>
             </div>
 
             {/* PRODUCT INFORMATION */}
-            <div className="mt-8 rounded-2xl border border-white/10 bg-[#101622] p-6">
+            <div className="mt-6 min-w-0 overflow-hidden rounded-2xl border border-white/10 bg-[#101622] p-4 sm:mt-8 sm:p-6">
               <h2 className="text-lg font-bold">Product Information</h2>
 
               <div className="mt-5 space-y-4 text-sm">
-                <div className="flex justify-between gap-4">
-                  <span className="text-gray-400">Brand</span>
-                  <span>{product.brand}</span>
+                <div className="flex min-w-0 justify-between gap-4">
+                  <span className="shrink-0 text-gray-400">Brand</span>
+
+                  <span className="min-w-0 break-words text-right">
+                    {product.brand}
+                  </span>
                 </div>
 
-                <div className="flex justify-between gap-4">
-                  <span className="text-gray-400">Model</span>
-                  <span>{product.model}</span>
+                <div className="flex min-w-0 justify-between gap-4">
+                  <span className="shrink-0 text-gray-400">Model</span>
+
+                  <span className="min-w-0 break-words text-right">
+                    {product.model}
+                  </span>
                 </div>
 
-                <div className="flex justify-between gap-4">
-                  <span className="text-gray-400">Category</span>
-                  <span>{product.category.name}</span>
+                <div className="flex min-w-0 justify-between gap-4">
+                  <span className="shrink-0 text-gray-400">Category</span>
+
+                  <span className="min-w-0 break-words text-right">
+                    {product.category.name}
+                  </span>
                 </div>
 
-                <div className="flex justify-between gap-4">
-                  <span className="text-gray-400">Available Stock</span>
-                  <span>{product.stock}</span>
+                <div className="flex min-w-0 justify-between gap-4">
+                  <span className="shrink-0 text-gray-400">
+                    Available Stock
+                  </span>
+
+                  <span className="min-w-0 break-words text-right">
+                    {product.stock}
+                  </span>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* REVIEWS SECTION PLACEHOLDER */}
-        <ProductReviews productId={product.id} />
+        {/* PRODUCT REVIEWS */}
+        <div className="mt-8 min-w-0 sm:mt-12">
+          <ProductReviews productId={product.id} />
+        </div>
       </div>
     </div>
   );

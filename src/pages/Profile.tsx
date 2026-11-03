@@ -157,14 +157,14 @@ export default function Profile({ onLogout }: ProfileProps) {
   }
 
   return (
-    <div className="min-h-screen bg-[#090d16] px-4 py-12 text-white">
-      <div className="mx-auto max-w-3xl">
+    <div className="min-h-screen w-full min-w-0 bg-[#090d16] px-3 py-6 text-white sm:px-4 sm:py-12">
+      <div className="mx-auto w-full min-w-0 max-w-3xl">
         <Link to="/" className="mb-8 block text-3xl font-black">
           TECH<span className="text-blue-500">ZONE</span>
         </Link>
 
-        <div className="rounded-3xl border border-white/10 bg-[#101622] p-6 shadow-2xl sm:p-10">
-          <div className="mb-8 flex flex-wrap items-center gap-5">
+        <div className="min-w-0 overflow-hidden rounded-2xl border border-white/10 bg-[#101622] p-4 shadow-2xl sm:rounded-3xl sm:p-10">
+          <div className="mb-8 flex min-w-0 flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-5">
             <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full border border-blue-500/30 bg-blue-500/10 text-3xl">
               {user?.details?.pictureUrl ? (
                 <img
@@ -178,7 +178,7 @@ export default function Profile({ onLogout }: ProfileProps) {
             </div>
 
             <div>
-              <h1 className="text-3xl font-bold">My Profile</h1>
+              <h1 className="text-2xl font-bold sm:text-3xl">My Profile</h1>
 
               <p className="mt-2 text-sm text-gray-400">
                 Manage your personal information
@@ -212,7 +212,7 @@ export default function Profile({ onLogout }: ProfileProps) {
 
           {user && (
             <form onSubmit={handleSave}>
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+              <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
                 {(
                   [
                     ["firstName", "First Name", "text"],
@@ -226,7 +226,9 @@ export default function Profile({ onLogout }: ProfileProps) {
                 ).map(([field, label, type]) => (
                   <div
                     key={field}
-                    className={field === "pictureUrl" ? "sm:col-span-2" : ""}
+                    className={`min-w-0 ${
+                      field === "pictureUrl" ? "sm:col-span-2" : ""
+                    }`}
                   >
                     <label
                       htmlFor={field}
@@ -248,32 +250,35 @@ export default function Profile({ onLogout }: ProfileProps) {
                         field === "lastName" ||
                         field === "email"
                       }
-                      className="w-full rounded-xl border border-white/10 bg-[#090d16] px-4 py-3.5 text-white outline-none transition placeholder:text-gray-600 focus:border-blue-500 disabled:cursor-default disabled:opacity-70"
+                      className="block w-full min-w-0 max-w-full rounded-xl border border-white/10 bg-[#090d16] px-3 py-3 text-sm text-white outline-none transition placeholder:text-gray-600 focus:border-blue-500 disabled:cursor-default disabled:opacity-70 sm:px-4 sm:py-3.5 sm:text-base"
                     />
                   </div>
                 ))}
               </div>
 
-              <div className="mt-8 flex flex-wrap gap-3 border-t border-white/10 pt-6">
+              <div className="mt-8 flex flex-col gap-3 border-t border-white/10 pt-6 sm:flex-row sm:flex-wrap">
                 {editing ? (
                   <>
-                    <LoadingButton
-                      type="submit"
-                      loading={saving}
-                      loadingText="Saving Changes..."
-                      className="w-full"
-                    >
-                      Save Changes
-                    </LoadingButton>
+                    <div className="w-full sm:w-auto sm:flex-1">
+                      <LoadingButton
+                        type="submit"
+                        loading={saving}
+                        loadingText="Saving Changes..."
+                        className="w-full"
+                      >
+                        Save Changes
+                      </LoadingButton>
+                    </div>
 
                     <button
                       type="button"
+                      disabled={saving}
                       onClick={() => {
                         fillForm(user);
                         setEditing(false);
                         setError("");
                       }}
-                      className="rounded-xl border border-white/10 px-6 py-3 font-semibold text-gray-300 transition hover:text-white"
+                      className="w-full rounded-xl border border-white/10 px-6 py-3 text-center font-semibold text-gray-300 transition hover:border-blue-500 hover:text-white disabled:opacity-50 sm:w-auto"
                     >
                       Cancel
                     </button>
@@ -285,7 +290,7 @@ export default function Profile({ onLogout }: ProfileProps) {
                       setEditing(true);
                       setSuccess("");
                     }}
-                    className="rounded-xl bg-blue-600 px-6 py-3 font-semibold transition hover:bg-blue-500"
+                    className="w-full rounded-xl bg-blue-600 px-6 py-3 text-center font-semibold text-white transition hover:bg-blue-500 sm:w-auto"
                   >
                     Edit Profile
                   </button>
@@ -293,7 +298,7 @@ export default function Profile({ onLogout }: ProfileProps) {
 
                 <Link
                   to="/change-password"
-                  className="rounded-xl border border-white/10 px-6 py-3 font-semibold text-gray-300 transition hover:border-blue-500 hover:text-white"
+                  className="flex w-full items-center justify-center rounded-xl border border-white/10 px-6 py-3 text-center font-semibold text-gray-300 transition hover:border-blue-500 hover:text-white sm:w-auto"
                 >
                   Change Password
                 </Link>

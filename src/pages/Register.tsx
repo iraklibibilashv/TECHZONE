@@ -17,7 +17,6 @@ export default function Register() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-
     setError("");
 
     if (password !== confirmPassword) {
@@ -48,26 +47,33 @@ export default function Register() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#090d16] px-4 py-12">
-      <div className="w-full max-w-md">
+    <div className="flex min-h-screen w-full min-w-0 items-center justify-center bg-[#090d16] px-4 py-8 sm:py-12">
+      <div className="w-full min-w-0 max-w-md">
+        {/* LOGO */}
         <Link
           to="/"
-          className="mb-8 block text-center text-3xl font-black text-white"
+          className="mb-6 block text-center text-2xl font-black text-white sm:mb-8 sm:text-3xl"
         >
           TECH<span className="text-blue-500">ZONE</span>
         </Link>
 
-        <div className="rounded-3xl border border-white/10 bg-[#101622] p-8 shadow-2xl sm:p-10">
-          <div className="mb-8 text-center">
-            <h1 className="text-3xl font-bold text-white">Create Account</h1>
+        {/* REGISTER CARD */}
+        <div className="min-w-0 rounded-2xl border border-white/10 bg-[#101622] p-5 shadow-2xl sm:rounded-3xl sm:p-10">
+          {/* HEADER */}
+          <div className="mb-6 text-center sm:mb-8">
+            <h1 className="text-2xl font-bold text-white sm:text-3xl">
+              Create Account
+            </h1>
 
             <p className="mt-3 text-sm text-gray-400">
               Join TECHZONE and explore our products
             </p>
           </div>
 
-          <form className="space-y-5" onSubmit={handleSubmit}>
-            <div>
+          {/* REGISTER FORM */}
+          <form className="min-w-0 space-y-5" onSubmit={handleSubmit}>
+            {/* FIRST NAME */}
+            <div className="min-w-0">
               <label
                 htmlFor="firstName"
                 className="mb-2 block text-sm font-medium text-gray-300"
@@ -83,11 +89,12 @@ export default function Register() {
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 required
-                className="w-full rounded-xl border border-white/10 bg-[#090d16] px-4 py-3.5 text-white outline-none transition placeholder:text-gray-600 focus:border-blue-500"
+                className="block w-full min-w-0 max-w-full rounded-xl border border-white/10 bg-[#090d16] px-4 py-3.5 text-base text-white outline-none transition placeholder:text-gray-600 focus:border-blue-500 sm:text-sm"
               />
             </div>
 
-            <div>
+            {/* LAST NAME */}
+            <div className="min-w-0">
               <label
                 htmlFor="lastName"
                 className="mb-2 block text-sm font-medium text-gray-300"
@@ -103,11 +110,12 @@ export default function Register() {
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 required
-                className="w-full rounded-xl border border-white/10 bg-[#090d16] px-4 py-3.5 text-white outline-none transition placeholder:text-gray-600 focus:border-blue-500"
+                className="block w-full min-w-0 max-w-full rounded-xl border border-white/10 bg-[#090d16] px-4 py-3.5 text-base text-white outline-none transition placeholder:text-gray-600 focus:border-blue-500 sm:text-sm"
               />
             </div>
 
-            <div>
+            {/* EMAIL */}
+            <div className="min-w-0">
               <label
                 htmlFor="email"
                 className="mb-2 block text-sm font-medium text-gray-300"
@@ -123,11 +131,12 @@ export default function Register() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full rounded-xl border border-white/10 bg-[#090d16] px-4 py-3.5 text-white outline-none transition placeholder:text-gray-600 focus:border-blue-500"
+                className="block w-full min-w-0 max-w-full rounded-xl border border-white/10 bg-[#090d16] px-4 py-3.5 text-base text-white outline-none transition placeholder:text-gray-600 focus:border-blue-500 sm:text-sm"
               />
             </div>
 
-            <div>
+            {/* PASSWORD */}
+            <div className="min-w-0">
               <label
                 htmlFor="password"
                 className="mb-2 block text-sm font-medium text-gray-300"
@@ -143,11 +152,12 @@ export default function Register() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full rounded-xl border border-white/10 bg-[#090d16] px-4 py-3.5 text-white outline-none transition placeholder:text-gray-600 focus:border-blue-500"
+                className="block w-full min-w-0 max-w-full rounded-xl border border-white/10 bg-[#090d16] px-4 py-3.5 text-base text-white outline-none transition placeholder:text-gray-600 focus:border-blue-500 sm:text-sm"
               />
             </div>
 
-            <div>
+            {/* CONFIRM PASSWORD */}
+            <div className="min-w-0">
               <label
                 htmlFor="confirmPassword"
                 className="mb-2 block text-sm font-medium text-gray-300"
@@ -163,19 +173,21 @@ export default function Register() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                className="w-full rounded-xl border border-white/10 bg-[#090d16] px-4 py-3.5 text-white outline-none transition placeholder:text-gray-600 focus:border-blue-500"
+                className="block w-full min-w-0 max-w-full rounded-xl border border-white/10 bg-[#090d16] px-4 py-3.5 text-base text-white outline-none transition placeholder:text-gray-600 focus:border-blue-500 sm:text-sm"
               />
             </div>
 
+            {/* ERROR MESSAGE */}
             {error && (
               <p
                 role="alert"
-                className="rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-400"
+                className="break-words rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-400"
               >
                 {error}
               </p>
             )}
 
+            {/* SUBMIT BUTTON */}
             <LoadingButton
               type="submit"
               loading={loading}
@@ -186,16 +198,18 @@ export default function Register() {
             </LoadingButton>
           </form>
 
-          <p className="mt-7 text-center text-sm text-gray-400">
+          {/* LOGIN LINK */}
+          <p className="mt-7 break-words text-center text-sm leading-6 text-gray-400">
             Already have an account?{" "}
             <Link
               to="/login"
-              className="font-semibold text-blue-400 hover:text-blue-300"
+              className="font-semibold text-blue-400 transition hover:text-blue-300"
             >
               Sign In
             </Link>
           </p>
 
+          {/* BACK TO STORE */}
           <Link
             to="/"
             className="mt-6 block text-center text-sm text-gray-500 transition hover:text-white"

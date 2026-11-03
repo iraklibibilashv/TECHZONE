@@ -1,4 +1,3 @@
-
 import type { Category } from "../types/category";
 
 type CategoriesProps = {
@@ -15,63 +14,71 @@ export default function Categories({
   return (
     <section
       id="categories"
-      className="px-6 py-16 md:px-12 lg:px-20"
+      className="w-full min-w-0 px-4 py-10 sm:px-6 sm:py-12 md:px-12 md:py-16 lg:px-20"
     >
-      <div className="mx-auto max-w-7xl">
-        <div className="mb-8">
-          <p className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-blue-400">
+      <div className="mx-auto w-full min-w-0 max-w-7xl">
+        {/* SECTION HEADER */}
+        <div className="mb-6 min-w-0 sm:mb-8">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-blue-400 sm:text-sm">
             Explore Our Store
           </p>
 
-          <h2 className="text-3xl font-bold text-white md:text-4xl">
+          <h2 className="text-2xl font-bold text-white sm:text-3xl md:text-4xl">
             Shop by Category
           </h2>
 
-          <p className="mt-3 text-gray-400">
+          <p className="mt-3 text-sm text-gray-400 sm:text-base">
             Find the right technology for your needs.
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-          {/* All Products */}
+        {/* CATEGORIES GRID */}
+        <div className="grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5">
+          {/* ALL PRODUCTS */}
           <button
             type="button"
             onClick={() => onSelectCategory("All")}
-            className={`overflow-hidden rounded-xl border text-left transition ${
+            aria-pressed={selectedCategory === "All"}
+            className={`min-w-0 overflow-hidden rounded-xl border text-left transition ${
               selectedCategory === "All"
                 ? "border-blue-500 bg-blue-600 text-white"
                 : "border-white/10 bg-white/5 text-gray-300 hover:border-blue-500"
             }`}
           >
-            <div className="flex h-32 items-center justify-center bg-gradient-to-br from-blue-600/30 to-blue-950">
-              <span className="text-4xl">🛍️</span>
+            <div className="flex h-24 items-center justify-center bg-gradient-to-br from-blue-600/30 to-blue-950 sm:h-32">
+              <span className="text-3xl sm:text-4xl">🛍️</span>
             </div>
 
-            <span className="block px-4 py-3 text-sm font-semibold">
+            <span className="block min-w-0 break-words px-3 py-3 text-xs font-semibold sm:px-4 sm:text-sm">
               All Products
             </span>
           </button>
 
-          {/* API Categories */}
+          {/* API CATEGORIES */}
           {categories.map((category) => (
             <button
               key={category.id}
               type="button"
               onClick={() => onSelectCategory(category.name)}
-              className={`overflow-hidden rounded-xl border text-left transition ${
+              aria-pressed={selectedCategory === category.name}
+              className={`min-w-0 overflow-hidden rounded-xl border text-left transition ${
                 selectedCategory === category.name
                   ? "border-blue-500 bg-blue-600 text-white"
                   : "border-white/10 bg-white/5 text-gray-300 hover:border-blue-500"
               }`}
             >
-              <img
-                src={category.imageUrl}
-                alt={category.name}
-                loading="lazy"
-                className="h-32 w-full object-cover"
-              />
+              {/* CATEGORY IMAGE */}
+              <div className="h-24 w-full min-w-0 overflow-hidden bg-white/5 sm:h-32">
+                <img
+                  src={category.imageUrl}
+                  alt={category.name}
+                  loading="lazy"
+                  className="h-full w-full max-w-full object-cover transition duration-300 hover:scale-105"
+                />
+              </div>
 
-              <span className="block px-4 py-3 text-sm font-semibold">
+              {/* CATEGORY NAME */}
+              <span className="block min-w-0 break-words px-3 py-3 text-xs font-semibold sm:px-4 sm:text-sm">
                 {category.name}
               </span>
             </button>

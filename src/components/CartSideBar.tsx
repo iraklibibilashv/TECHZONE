@@ -104,7 +104,8 @@ export default function CartSidebar({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100]">
+    <div className="fixed inset-0 z-[100] overflow-hidden">
+      {/* OVERLAY */}
       <button
         type="button"
         aria-label="Close cart"
@@ -112,18 +113,19 @@ export default function CartSidebar({
         className="absolute inset-0 h-full w-full bg-black/70 backdrop-blur-sm"
       />
 
+      {/* SIDEBAR */}
       <aside
         role="dialog"
         aria-modal="true"
         aria-label="Shopping cart"
-        className="absolute right-0 top-0 flex h-full w-full max-w-md flex-col border-l border-white/10 bg-[#101622] text-white shadow-2xl"
+        className="absolute inset-y-0 right-0 flex h-full w-full min-w-0 max-w-md flex-col overflow-hidden border-l border-white/10 bg-[#101622] text-white shadow-2xl"
       >
         {/* HEADER */}
-        <div className="flex items-center justify-between border-b border-white/10 px-6 py-6">
-          <div>
-            <h2 className="text-2xl font-bold">Shopping Cart</h2>
+        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 px-4 py-4 sm:px-6 sm:py-6">
+          <div className="min-w-0">
+            <h2 className="text-xl font-bold sm:text-2xl">Shopping Cart</h2>
 
-            <p className="mt-1 text-sm text-gray-400">
+            <p className="mt-1 text-xs text-gray-400 sm:text-sm">
               {totalQuantity} items in your cart
             </p>
           </div>
@@ -132,18 +134,18 @@ export default function CartSidebar({
             type="button"
             onClick={onClose}
             aria-label="Close cart"
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-xl text-gray-400 transition hover:border-blue-500 hover:text-white"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 text-xl text-gray-400 transition hover:border-blue-500 hover:text-white"
           >
             ×
           </button>
         </div>
 
         {/* CART PRODUCTS */}
-        <div className="flex-1 space-y-4 overflow-y-auto p-6">
+        <div className="min-h-0 min-w-0 flex-1 space-y-4 overflow-y-auto overscroll-contain p-3 sm:p-6">
           {error && (
             <p
               role="alert"
-              className="rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-400"
+              className="break-words rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-400"
             >
               {error}
             </p>
@@ -167,7 +169,7 @@ export default function CartSidebar({
               </p>
             </div>
           ) : items.length === 0 ? (
-            <div className="flex h-full flex-col items-center justify-center text-center">
+            <div className="flex h-full flex-col items-center justify-center px-2 text-center">
               <span className="text-6xl">🛒</span>
 
               <h3 className="mt-5 text-xl font-semibold">Your cart is empty</h3>
@@ -206,25 +208,26 @@ export default function CartSidebar({
               return (
                 <div
                   key={item.id}
-                  className="rounded-2xl border border-white/10 bg-[#090d16] p-4"
+                  className="min-w-0 overflow-hidden rounded-2xl border border-white/10 bg-[#090d16] p-3 sm:p-4"
                 >
-                  <div className="flex gap-4">
+                  {/* PRODUCT INFORMATION */}
+                  <div className="flex min-w-0 gap-3 sm:gap-4">
                     <img
                       src={item.product.imageUrl}
                       alt={item.product.name}
-                      className="h-24 w-24 shrink-0 rounded-xl bg-white object-contain p-2"
+                      className="h-20 w-20 shrink-0 rounded-xl bg-white object-contain p-2 sm:h-24 sm:w-24"
                     />
 
                     <div className="min-w-0 flex-1">
-                      <h3 className="line-clamp-2 text-sm font-semibold text-white">
+                      <h3 className="line-clamp-2 break-words text-sm font-semibold text-white">
                         {item.product.name}
                       </h3>
 
-                      <p className="mt-1 text-xs text-gray-500">
+                      <p className="mt-1 truncate text-xs text-gray-500">
                         {item.product.brand}
                       </p>
 
-                      <p className="mt-2 text-sm font-bold text-blue-400">
+                      <p className="mt-2 break-words text-sm font-bold text-blue-400">
                         ₾{item.totalPrice.toLocaleString()}
                       </p>
 
@@ -246,14 +249,15 @@ export default function CartSidebar({
                     </div>
                   </div>
 
-                  <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-4">
-                    <div className="flex items-center rounded-xl border border-white/10 bg-white/5">
+                  {/* QUANTITY AND PRICE */}
+                  <div className="mt-4 flex min-w-0 flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-4">
+                    <div className="flex shrink-0 items-center rounded-xl border border-white/10 bg-white/5">
                       <button
                         type="button"
                         onClick={() => handleDecrease(item)}
                         disabled={isBusy || item.quantity <= 1}
                         aria-label="Decrease quantity"
-                        className="flex h-10 w-11 items-center justify-center text-lg text-white transition hover:text-blue-400 disabled:opacity-40"
+                        className="flex h-10 w-10 items-center justify-center text-lg text-white transition hover:text-blue-400 disabled:opacity-40 sm:w-11"
                       >
                         {decreasing ? <ButtonSpinner /> : "−"}
                       </button>
@@ -267,13 +271,13 @@ export default function CartSidebar({
                         onClick={() => handleIncrease(item)}
                         disabled={isBusy || item.quantity >= item.product.stock}
                         aria-label="Increase quantity"
-                        className="flex h-10 w-11 items-center justify-center text-lg text-white transition hover:text-blue-400 disabled:opacity-40"
+                        className="flex h-10 w-10 items-center justify-center text-lg text-white transition hover:text-blue-400 disabled:opacity-40 sm:w-11"
                       >
                         {increasing ? <ButtonSpinner /> : "+"}
                       </button>
                     </div>
 
-                    <p className="font-bold text-white">
+                    <p className="min-w-0 break-words font-bold text-white">
                       ₾{item.totalPrice.toLocaleString()}
                     </p>
                   </div>
@@ -284,16 +288,16 @@ export default function CartSidebar({
         </div>
 
         {/* FOOTER */}
-        <div className="border-t border-white/10 bg-[#0c111d] p-6">
+        <div className="shrink-0 border-t border-white/10 bg-[#0c111d] p-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:p-6">
           <div className="mb-3 flex items-center justify-between text-sm text-gray-400">
             <span>Items</span>
             <span>{totalQuantity}</span>
           </div>
 
-          <div className="mb-6 flex items-center justify-between">
+          <div className="mb-6 flex min-w-0 items-center justify-between gap-3">
             <span className="text-lg font-semibold">Total</span>
 
-            <span className="text-2xl font-black text-blue-400">
+            <span className="min-w-0 break-words text-right text-xl font-black text-blue-400 sm:text-2xl">
               ₾{totalPrice.toLocaleString()}
             </span>
           </div>
@@ -307,7 +311,9 @@ export default function CartSidebar({
                 Checkout Successful!
               </p>
 
-              <p className="mt-1 text-sm text-gray-300">{checkoutSuccess}</p>
+              <p className="mt-1 break-words text-sm text-gray-300">
+                {checkoutSuccess}
+              </p>
             </div>
           )}
 
@@ -320,7 +326,7 @@ export default function CartSidebar({
               updatingId !== null ||
               items.length === 0
             }
-            className="flex w-full items-center justify-center gap-3 rounded-xl bg-blue-600 py-4 text-center font-bold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex w-full items-center justify-center gap-3 rounded-xl bg-blue-600 px-3 py-4 text-center text-sm font-bold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50 sm:text-base"
           >
             {checkoutLoading ? (
               <>

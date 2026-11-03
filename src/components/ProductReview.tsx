@@ -34,10 +34,9 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
   const [totalPages, setTotalPages] = useState(1);
 
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deletingReviewId, setDeletingReviewId] = useState<number | null>(null);
 
   const loggedIn = isAuthenticated();
-
-  const [deletingReviewId, setDeletingReviewId] = useState<number | null>(null);
 
   // LOAD REVIEWS
   useEffect(() => {
@@ -208,10 +207,13 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
   );
 
   return (
-    <section className="mt-16 border-t border-white/10 pt-10">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-white">Customer Reviews</h2>
+    <section className="mt-10 w-full min-w-0 border-t border-white/10 pt-8 sm:mt-16 sm:pt-10">
+      {/* HEADER */}
+      <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <h2 className="text-xl font-bold text-white sm:text-2xl">
+            Customer Reviews
+          </h2>
 
           <p className="mt-2 text-sm text-gray-400">
             See what customers think about this product.
@@ -221,7 +223,7 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
 
       {/* ADD OR EDIT REVIEW */}
       {loggedIn ? (
-        <div className="mt-8 rounded-2xl border border-white/10 bg-[#101622] p-6">
+        <div className="mt-6 min-w-0 overflow-hidden rounded-2xl border border-white/10 bg-[#101622] p-4 sm:mt-8 sm:p-6">
           <h3 className="text-lg font-bold text-white">
             {editingReviewId !== null
               ? "Edit Your Review"
@@ -232,11 +234,11 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
             Select a rating from 1 to 5 stars.
           </p>
 
-          <div className="mt-5">
+          <div className="mt-5 max-w-full">
             <ReviewStars rating={rating} onChange={setRating} />
           </div>
 
-          <div className="mt-6 flex flex-wrap gap-3">
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <button
               type="button"
               onClick={handleSubmit}
@@ -245,7 +247,7 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
                 rating === 0 ||
                 (currentUserReview !== undefined && editingReviewId === null)
               }
-              className="rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+              className="w-full rounded-xl bg-blue-600 px-6 py-3 text-center font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
             >
               {submitting
                 ? "Saving..."
@@ -262,7 +264,7 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
                   setEditingReviewId(null);
                   setRating(0);
                 }}
-                className="rounded-xl border border-white/10 px-6 py-3 text-gray-300 transition hover:bg-white/5 hover:text-white"
+                className="w-full rounded-xl border border-white/10 px-6 py-3 text-center text-gray-300 transition hover:bg-white/5 hover:text-white sm:w-auto"
               >
                 Cancel
               </button>
@@ -270,7 +272,7 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
           </div>
 
           {currentUserReview && editingReviewId === null && (
-            <p className="mt-4 text-sm text-amber-400">
+            <p className="mt-4 break-words text-sm text-amber-400">
               You have already rated this product. You can edit your existing
               review below.
             </p>
@@ -286,7 +288,7 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
       {error && (
         <div
           role="alert"
-          className="mt-6 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-400"
+          className="mt-6 break-words rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-400"
         >
           {error}
         </div>
@@ -296,20 +298,20 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
       {success && (
         <div
           role="status"
-          className="mt-6 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-sm text-emerald-400"
+          className="mt-6 break-words rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-sm text-emerald-400"
         >
           {success}
         </div>
       )}
 
       {/* REVIEWS LIST */}
-      <div className="mt-10 space-y-4">
+      <div className="mt-8 min-w-0 space-y-4 sm:mt-10">
         {loading ? (
-          <div className="rounded-2xl border border-white/10 bg-[#101622] p-8 text-center text-gray-400">
+          <div className="rounded-2xl border border-white/10 bg-[#101622] p-5 text-center text-gray-400 sm:p-8">
             Loading reviews...
           </div>
         ) : reviews.length === 0 ? (
-          <div className="rounded-2xl border border-white/10 bg-[#101622] p-8 text-center">
+          <div className="rounded-2xl border border-white/10 bg-[#101622] p-5 text-center sm:p-8">
             <p className="text-gray-400">
               No reviews yet. Be the first to rate this product!
             </p>
@@ -321,11 +323,11 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
             return (
               <div
                 key={review.id}
-                className="rounded-2xl border border-white/10 bg-[#101622] p-6 transition hover:border-white/20"
+                className="min-w-0 overflow-hidden rounded-2xl border border-white/10 bg-[#101622] p-4 transition hover:border-white/20 sm:p-6"
               >
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div>
-                    <p className="font-semibold text-white">
+                <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+                  <div className="min-w-0">
+                    <p className="break-words font-semibold text-white">
                       {review.user?.firstName} {review.user?.lastName}
                     </p>
 
@@ -334,12 +336,14 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
                     </p>
                   </div>
 
-                  <ReviewStars rating={review.rating} size="sm" />
+                  <div className="max-w-full">
+                    <ReviewStars rating={review.rating} size="sm" />
+                  </div>
                 </div>
 
-                {/* EDIT AND DELETE - OWNER ONLY */}
+                {/* EDIT AND DELETE */}
                 {isOwner && (
-                  <div className="mt-5 flex items-center gap-4 border-t border-white/10 pt-4">
+                  <div className="mt-5 flex flex-wrap items-center gap-4 border-t border-white/10 pt-4">
                     <button
                       type="button"
                       disabled={submitting}
@@ -367,17 +371,17 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
 
       {/* PAGINATION */}
       {totalPages > 1 && (
-        <div className="mt-8 flex items-center justify-center gap-4">
+        <div className="mt-8 flex min-w-0 flex-wrap items-center justify-center gap-2 sm:gap-4">
           <button
             type="button"
             disabled={page === 1 || loading || submitting}
             onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-            className="rounded-xl border border-white/10 px-5 py-3 text-sm text-gray-300 transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-xl border border-white/10 px-3 py-2 text-xs text-gray-300 transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-40 sm:px-5 sm:py-3 sm:text-sm"
           >
             Previous
           </button>
 
-          <span className="text-sm text-gray-400">
+          <span className="text-center text-xs text-gray-400 sm:text-sm">
             Page {page} of {totalPages}
           </span>
 
@@ -385,7 +389,7 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
             type="button"
             disabled={page >= totalPages || loading || submitting}
             onClick={() => setPage((prev) => prev + 1)}
-            className="rounded-xl border border-white/10 px-5 py-3 text-sm text-gray-300 transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-xl border border-white/10 px-3 py-2 text-xs text-gray-300 transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-40 sm:px-5 sm:py-3 sm:text-sm"
           >
             Next
           </button>

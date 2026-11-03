@@ -1,5 +1,5 @@
-
 import { useCallback, useEffect, useState } from "react";
+import type { FormEvent } from "react";
 
 import AdminSidebar from "../../components/admin/AdminSidebar";
 import ConfirmModal from "../../components/ConfirmModal";
@@ -21,6 +21,11 @@ const emptyForm: CategoryRequest = {
   imageUrl: "",
 };
 
+const inputClass =
+  "block w-full min-w-0 max-w-full rounded-xl border border-white/10 bg-[#090d16] px-4 py-3 text-base text-white outline-none transition placeholder:text-gray-600 focus:border-blue-500 sm:text-sm";
+
+const labelClass = "mb-2 block text-sm font-medium text-gray-300";
+
 export default function AdminCategories() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,15 +36,13 @@ export default function AdminCategories() {
   const [success, setSuccess] = useState("");
 
   const [formOpen, setFormOpen] = useState(false);
-  const [editingCategory, setEditingCategory] =
-    useState<Category | null>(null);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
 
   const [form, setForm] = useState<CategoryRequest>({
     ...emptyForm,
   });
 
-  const [deleteTarget, setDeleteTarget] =
-    useState<Category | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Category | null>(null);
 
   const loadCategories = useCallback(async () => {
     try {
@@ -50,9 +53,7 @@ export default function AdminCategories() {
       setCategories(result);
     } catch (err) {
       setError(
-        err instanceof Error
-          ? err.message
-          : "Failed to load categories."
+        err instanceof Error ? err.message : "Failed to load categories.",
       );
     } finally {
       setLoading(false);
@@ -87,23 +88,19 @@ export default function AdminCategories() {
 
   function closeForm() {
     if (saving) return;
+
     setFormOpen(false);
     setEditingCategory(null);
   }
 
-  function updateField(
-    field: keyof CategoryRequest,
-    value: string
-  ) {
+  function updateField(field: keyof CategoryRequest, value: string) {
     setForm((prev) => ({
       ...prev,
       [field]: value,
     }));
   }
 
-  async function handleSave(
-    event: React.FormEvent<HTMLFormElement>
-  ) {
+  async function handleSave(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (saving) return;
@@ -132,11 +129,7 @@ export default function AdminCategories() {
 
       await loadCategories();
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Failed to save category."
-      );
+      setError(err instanceof Error ? err.message : "Failed to save category.");
     } finally {
       setSaving(false);
     }
@@ -158,9 +151,7 @@ export default function AdminCategories() {
       await loadCategories();
     } catch (err) {
       setError(
-        err instanceof Error
-          ? err.message
-          : "Failed to delete category."
+        err instanceof Error ? err.message : "Failed to delete category.",
       );
 
       setDeleteTarget(null);
@@ -170,23 +161,23 @@ export default function AdminCategories() {
   }
 
   return (
-    <div className="min-h-screen bg-[#090d16] text-white">
+    <div className="min-h-screen w-full min-w-0 bg-[#090d16] text-white">
       <AdminSidebar />
 
-      <main className="lg:ml-72">
-        <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 lg:px-10 lg:py-12">
+      <main className="min-w-0 lg:ml-72">
+        <div className="mx-auto w-full min-w-0 max-w-7xl px-4 py-6 sm:px-8 sm:py-8 lg:px-10 lg:py-12">
           {/* HEADER */}
-          <div className="mb-8 flex flex-wrap items-center justify-between gap-5">
-            <div>
+          <div className="mb-8 flex flex-col items-start gap-5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+            <div className="min-w-0">
               <p className="mb-2 text-sm font-semibold text-blue-400">
                 TECHZONE ADMIN
               </p>
 
-              <h1 className="text-3xl font-black sm:text-4xl">
+              <h1 className="break-words text-2xl font-black sm:text-4xl">
                 Categories Management
               </h1>
 
-              <p className="mt-3 text-gray-400">
+              <p className="mt-3 text-sm leading-6 text-gray-400 sm:text-base">
                 Create, edit and organize product categories.
               </p>
             </div>
@@ -194,7 +185,7 @@ export default function AdminCategories() {
             <button
               type="button"
               onClick={openCreate}
-              className="rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-500"
+              className="w-full shrink-0 rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-500 sm:w-auto"
             >
               + Add Category
             </button>
@@ -204,7 +195,7 @@ export default function AdminCategories() {
           {error && (
             <div
               role="alert"
-              className="mb-6 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-400"
+              className="mb-6 break-words rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-400"
             >
               {error}
             </div>
@@ -213,34 +204,35 @@ export default function AdminCategories() {
           {success && (
             <div
               role="status"
-              className="mb-6 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-sm text-emerald-400"
+              className="mb-6 break-words rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-sm text-emerald-400"
             >
               {success}
             </div>
           )}
 
           {/* CATEGORY COUNT */}
-          <div className="mb-6 rounded-2xl border border-white/10 bg-[#101622] p-6">
-            <p className="text-sm text-gray-400">
-              Total Categories
-            </p>
+          <div className="mb-6 rounded-2xl border border-white/10 bg-[#101622] p-5 sm:p-6">
+            <p className="text-sm text-gray-400">Total Categories</p>
 
             <p className="mt-2 text-3xl font-black">
               {loading ? "..." : categories.length}
             </p>
           </div>
 
+          {/* MOBILE TABLE HINT */}
+          <p className="mb-3 text-xs text-gray-500 lg:hidden">
+            Swipe horizontally to view all category details →
+          </p>
+
           {/* CATEGORIES TABLE */}
-          <div className="overflow-x-auto rounded-2xl border border-white/10 bg-[#101622]">
+          <div className="w-full min-w-0 overflow-x-auto overscroll-x-contain rounded-2xl border border-white/10 bg-[#101622]">
             <table className="w-full min-w-[700px] text-left">
               <thead className="border-b border-white/10 bg-white/[0.03]">
                 <tr className="text-xs uppercase tracking-wider text-gray-400">
                   <th className="px-6 py-5">Category</th>
                   <th className="px-6 py-5">Description</th>
                   <th className="px-6 py-5">Products</th>
-                  <th className="px-6 py-5 text-right">
-                    Actions
-                  </th>
+                  <th className="px-6 py-5 text-right">Actions</th>
                 </tr>
               </thead>
 
@@ -269,6 +261,7 @@ export default function AdminCategories() {
                       key={category.id}
                       className="transition hover:bg-white/[0.02]"
                     >
+                      {/* CATEGORY */}
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-4">
                           <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-white/5 p-2">
@@ -279,14 +272,12 @@ export default function AdminCategories() {
                                 className="h-full w-full object-contain"
                               />
                             ) : (
-                              <span className="text-2xl text-gray-500">
-                                ▦
-                              </span>
+                              <span className="text-2xl text-gray-500">▦</span>
                             )}
                           </div>
 
-                          <div>
-                            <p className="font-semibold text-white">
+                          <div className="min-w-0">
+                            <p className="max-w-[180px] truncate font-semibold text-white">
                               {category.name}
                             </p>
 
@@ -297,18 +288,21 @@ export default function AdminCategories() {
                         </div>
                       </td>
 
+                      {/* DESCRIPTION */}
                       <td className="max-w-xs px-6 py-4 text-sm text-gray-400">
                         <p className="line-clamp-2">
                           {category.description || "No description"}
                         </p>
                       </td>
 
+                      {/* PRODUCT COUNT */}
                       <td className="px-6 py-4">
                         <span className="rounded-lg bg-blue-500/10 px-3 py-1.5 text-sm font-semibold text-blue-400">
                           {category.productCount}
                         </span>
                       </td>
 
+                      {/* ACTIONS */}
                       <td className="px-6 py-4">
                         <div className="flex justify-end gap-3">
                           <button
@@ -339,25 +333,24 @@ export default function AdminCategories() {
 
       {/* ADD / EDIT MODAL */}
       {formOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 px-4 py-8 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 px-3 py-3 backdrop-blur-sm sm:px-4 sm:py-8">
           <div
             role="dialog"
             aria-modal="true"
             aria-labelledby="category-form-title"
-            className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-3xl border border-white/10 bg-[#101622] p-7 shadow-2xl"
+            className="max-h-[calc(100dvh-1.5rem)] w-full min-w-0 max-w-xl overflow-x-hidden overflow-y-auto overscroll-contain rounded-2xl border border-white/10 bg-[#101622] p-4 shadow-2xl sm:max-h-[90vh] sm:rounded-3xl sm:p-7"
           >
-            <div className="mb-7 flex items-start justify-between gap-4">
-              <div>
+            {/* MODAL HEADER */}
+            <div className="mb-6 flex items-start justify-between gap-4 sm:mb-7">
+              <div className="min-w-0">
                 <h2
                   id="category-form-title"
-                  className="text-2xl font-bold text-white"
+                  className="text-xl font-bold text-white sm:text-2xl"
                 >
-                  {editingCategory
-                    ? "Edit Category"
-                    : "Add New Category"}
+                  {editingCategory ? "Edit Category" : "Add New Category"}
                 </h2>
 
-                <p className="mt-2 text-sm text-gray-400">
+                <p className="mt-2 text-sm leading-6 text-gray-400">
                   Fill in the category information below.
                 </p>
               </div>
@@ -367,18 +360,17 @@ export default function AdminCategories() {
                 onClick={closeForm}
                 disabled={saving}
                 aria-label="Close form"
-                className="text-xl text-gray-400 hover:text-white disabled:opacity-50"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-xl text-gray-400 transition hover:bg-white/5 hover:text-white disabled:opacity-50"
               >
                 ✕
               </button>
             </div>
 
-            <form onSubmit={handleSave} className="space-y-5">
-              <div>
-                <label
-                  htmlFor="category-name"
-                  className="mb-2 block text-sm font-medium text-gray-300"
-                >
+            {/* FORM */}
+            <form onSubmit={handleSave} className="min-w-0 space-y-5">
+              {/* NAME */}
+              <div className="min-w-0">
+                <label htmlFor="category-name" className={labelClass}>
                   Category Name
                 </label>
 
@@ -387,19 +379,15 @@ export default function AdminCategories() {
                   type="text"
                   required
                   value={form.name}
-                  onChange={(e) =>
-                    updateField("name", e.target.value)
-                  }
+                  onChange={(e) => updateField("name", e.target.value)}
                   placeholder="e.g. Graphics Cards"
-                  className="w-full rounded-xl border border-white/10 bg-[#090d16] px-4 py-3 text-white outline-none transition focus:border-blue-500"
+                  className={inputClass}
                 />
               </div>
 
-              <div>
-                <label
-                  htmlFor="category-description"
-                  className="mb-2 block text-sm font-medium text-gray-300"
-                >
+              {/* DESCRIPTION */}
+              <div className="min-w-0">
+                <label htmlFor="category-description" className={labelClass}>
                   Description
                 </label>
 
@@ -408,19 +396,15 @@ export default function AdminCategories() {
                   required
                   rows={4}
                   value={form.description}
-                  onChange={(e) =>
-                    updateField("description", e.target.value)
-                  }
+                  onChange={(e) => updateField("description", e.target.value)}
                   placeholder="Describe this category..."
-                  className="w-full resize-none rounded-xl border border-white/10 bg-[#090d16] px-4 py-3 text-white outline-none transition focus:border-blue-500"
+                  className={`${inputClass} resize-none`}
                 />
               </div>
 
-              <div>
-                <label
-                  htmlFor="category-image"
-                  className="mb-2 block text-sm font-medium text-gray-300"
-                >
+              {/* IMAGE URL */}
+              <div className="min-w-0">
+                <label htmlFor="category-image" className={labelClass}>
                   Image URL
                 </label>
 
@@ -429,17 +413,15 @@ export default function AdminCategories() {
                   type="url"
                   required
                   value={form.imageUrl}
-                  onChange={(e) =>
-                    updateField("imageUrl", e.target.value)
-                  }
+                  onChange={(e) => updateField("imageUrl", e.target.value)}
                   placeholder="https://example.com/image.jpg"
-                  className="w-full rounded-xl border border-white/10 bg-[#090d16] px-4 py-3 text-white outline-none transition focus:border-blue-500"
+                  className={inputClass}
                 />
               </div>
 
               {/* IMAGE PREVIEW */}
               {form.imageUrl && (
-                <div className="rounded-xl border border-white/10 bg-[#090d16] p-4">
+                <div className="min-w-0 rounded-xl border border-white/10 bg-[#090d16] p-4">
                   <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-500">
                     Image Preview
                   </p>
@@ -447,24 +429,25 @@ export default function AdminCategories() {
                   <img
                     src={form.imageUrl}
                     alt="Category preview"
-                    className="h-36 w-full object-contain"
+                    className="h-32 w-full object-contain sm:h-36"
                   />
                 </div>
               )}
 
               {/* FORM ERROR */}
               {error && (
-                <p role="alert" className="text-sm text-red-400">
+                <p role="alert" className="break-words text-sm text-red-400">
                   {error}
                 </p>
               )}
 
-              <div className="flex justify-end gap-3 border-t border-white/10 pt-6">
+              {/* FORM ACTIONS */}
+              <div className="flex flex-col-reverse gap-3 border-t border-white/10 pt-6 sm:flex-row sm:justify-end">
                 <button
                   type="button"
                   disabled={saving}
                   onClick={closeForm}
-                  className="rounded-xl border border-white/10 px-5 py-3 font-semibold text-gray-300 transition hover:bg-white/5 disabled:opacity-50"
+                  className="w-full rounded-xl border border-white/10 px-5 py-3 font-semibold text-gray-300 transition hover:bg-white/5 disabled:opacity-50 sm:w-auto"
                 >
                   Cancel
                 </button>
@@ -472,7 +455,7 @@ export default function AdminCategories() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-500 disabled:opacity-50"
+                  className="w-full rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-500 disabled:opacity-50 sm:w-auto"
                 >
                   {saving
                     ? "Saving..."
