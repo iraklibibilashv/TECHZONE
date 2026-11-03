@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import type { Product } from "../types/product";
 import { useCompare } from "../context/CompareContext";
@@ -20,12 +19,8 @@ export default function ProductCard({
 }: ProductCardProps) {
   const detailsUrl = `/products/${product.id}`;
 
-  const {
-    compareProducts,
-    addToCompare,
-    removeFromCompare,
-    isCompared,
-  } = useCompare();
+  const { compareProducts, addToCompare, removeFromCompare, isCompared } =
+    useCompare();
 
   const compared = isCompared(product.id);
   const compareLimitReached = compareProducts.length >= 3;
@@ -40,7 +35,6 @@ export default function ProductCard({
 
   return (
     <article className="group flex h-full w-full min-w-0 flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#101622] transition duration-300 hover:-translate-y-1 hover:border-blue-500/50 hover:shadow-xl hover:shadow-blue-950/30">
-
       {/* PRODUCT IMAGE */}
       <div className="relative flex h-48 min-w-0 items-center justify-center overflow-hidden bg-white/[0.03] p-4 sm:h-56 sm:p-6">
         <Link
@@ -51,6 +45,9 @@ export default function ProductCard({
           <img
             src={product.imageUrl}
             alt={product.name}
+            loading="lazy"
+            decoding="async"
+            fetchPriority="low"
             className="h-full max-h-full w-full max-w-full object-contain transition duration-500 group-hover:scale-110"
           />
         </Link>
@@ -58,18 +55,12 @@ export default function ProductCard({
         {/* FAVORITE */}
         <button
           type="button"
-          aria-label={
-            isFavorite
-              ? "Remove from favorites"
-              : "Add to favorites"
-          }
+          aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
           aria-pressed={isFavorite}
           disabled={favoriteLoading}
           onClick={() => onToggleFavorite(product)}
           className={`absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-[#090d16]/80 text-xl transition disabled:cursor-wait disabled:opacity-50 sm:right-4 sm:top-4 ${
-            isFavorite
-              ? "text-red-400"
-              : "text-gray-300 hover:text-red-400"
+            isFavorite ? "text-red-400" : "text-gray-300 hover:text-red-400"
           }`}
         >
           {isFavorite ? "♥" : "♡"}
@@ -83,26 +74,20 @@ export default function ProductCard({
 
       {/* PRODUCT CONTENT */}
       <div className="flex min-w-0 flex-1 flex-col p-4 sm:p-5">
-
         {/* BRAND */}
         <p className="truncate text-xs font-semibold uppercase tracking-wider text-blue-400">
           {product.brand}
         </p>
 
         {/* PRODUCT NAME */}
-        <Link
-          to={detailsUrl}
-          className="mt-2 block min-w-0"
-        >
+        <Link to={detailsUrl} className="mt-2 block min-w-0">
           <h3 className="line-clamp-2 min-h-[3.5rem] break-words text-lg font-bold text-white transition hover:text-blue-400 sm:line-clamp-1 sm:min-h-0">
             {product.name}
           </h3>
         </Link>
 
         {/* MODEL */}
-        <p className="mt-1 truncate text-sm text-gray-500">
-          {product.model}
-        </p>
+        <p className="mt-1 truncate text-sm text-gray-500">{product.model}</p>
 
         {/* RATING AND STOCK */}
         <div className="mt-4 flex min-w-0 flex-wrap items-center justify-between gap-2">
@@ -115,14 +100,10 @@ export default function ProductCard({
 
           <span
             className={`text-xs ${
-              product.stock > 0
-                ? "text-emerald-400"
-                : "text-red-400"
+              product.stock > 0 ? "text-emerald-400" : "text-red-400"
             }`}
           >
-            {product.stock > 0
-              ? `In Stock: ${product.stock}`
-              : "Out of Stock"}
+            {product.stock > 0 ? `In Stock: ${product.stock}` : "Out of Stock"}
           </span>
         </div>
 

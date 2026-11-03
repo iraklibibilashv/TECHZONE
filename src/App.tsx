@@ -1,4 +1,12 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 
@@ -18,39 +26,10 @@ import WishlistSidebar from "./components/WishlistSideBar";
 
 import ProductSkeletonGrid from "./components/ProductSkeletonGrid";
 
-import Login from "./pages/Login";
-
-import Register from "./pages/Register";
-
-import VerifyEmail from "./pages/VerifyEmail";
-
-import Profile from "./pages/Profile";
-
-import ChangePassword from "./pages/ChangePassword";
-
-import ForgotPassword from "./pages/ForgotPassword";
-
-import ResetPassword from "./pages/ResetPassword";
-
-import ProductDetails from "./pages/ProductDetails";
-
-import AdminDashboard from "./pages/admin/AdminDashboard";
-
-import AdminCategories from "./pages/admin/AdminCategories";
-
-import AdminProducts from "./pages/admin/AdminProducts";
-
-import AdminLogin from "./pages/admin/AdminLogin";
-
-import AdminRegister from "./pages/admin/AdminRegister";
-
 import ProtectedAdminRoute from "./components/admin/ProtectedAdminRoute";
 
-import AdminInventory from "./pages/admin/AdminInventory";
-
-import CompareProducts from "./pages/CompareProducts";
-
 import { CompareProvider } from "./context/CompareContext";
+
 import AdvancedProductFilters, {
   DEFAULT_ADVANCED_FILTERS,
   type AdvancedFilters,
@@ -77,11 +56,26 @@ import type { Category } from "./types/category";
 
 import type { CartItem } from "./types/cart";
 
-import { useCallback } from "react";
-
 import Toast from "./components/Toast";
 
 import type { ToastData, ToastType } from "./components/Toast";
+
+// Load route pages only when the user visits them.
+const Login = lazy(() => import("./pages/Login"));
+const Register = lazy(() => import("./pages/Register"));
+const VerifyEmail = lazy(() => import("./pages/VerifyEmail"));
+const Profile = lazy(() => import("./pages/Profile"));
+const ChangePassword = lazy(() => import("./pages/ChangePassword"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const ProductDetails = lazy(() => import("./pages/ProductDetails"));
+const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
+const AdminCategories = lazy(() => import("./pages/admin/AdminCategories"));
+const AdminProducts = lazy(() => import("./pages/admin/AdminProducts"));
+const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
+const AdminRegister = lazy(() => import("./pages/admin/AdminRegister"));
+const AdminInventory = lazy(() => import("./pages/admin/AdminInventory"));
+const CompareProducts = lazy(() => import("./pages/CompareProducts"));
 
 type HomePageProps = {
   isLoggedIn: boolean;
@@ -103,6 +97,7 @@ function HomePage({ isLoggedIn, onLogout }: HomePageProps) {
   const [searchQuery, setSearchQuery] = useState("");
 
   const [selectedCategory, setSelectedCategory] = useState("All");
+
   const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilters>({
     ...DEFAULT_ADVANCED_FILTERS,
   });
@@ -631,6 +626,7 @@ function HomePage({ isLoggedIn, onLogout }: HomePageProps) {
         (value) =>
           String(value ?? "")
             .toLowerCase()
+
             .includes(query),
       );
 
@@ -823,6 +819,20 @@ function HomePage({ isLoggedIn, onLogout }: HomePageProps) {
   );
 }
 
+function RouteLoading() {
+  return (
+    <div
+      role="status"
+      className="flex min-h-screen items-center justify-center bg-[#090d16] px-4 text-white"
+    >
+      <div className="flex items-center gap-3 text-sm text-gray-400">
+        <span className="h-6 w-6 animate-spin rounded-full border-2 border-white/10 border-t-blue-500" />
+        Loading page...
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(() => isAuthenticated());
 
@@ -838,74 +848,78 @@ export default function App() {
 
   return (
     <CompareProvider>
-      <Routes>
-        <Route
-          path="/"
-          element={<HomePage isLoggedIn={isLoggedIn} onLogout={handleLogout} />}
-        />
+      <Suspense fallback={<RouteLoading />}>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <HomePage isLoggedIn={isLoggedIn} onLogout={handleLogout} />
+            }
+          />
 
-        {/* ADMIN AUTH */}
+          {/* ADMIN AUTH */}
 
-        <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
 
-        <Route path="/admin/register" element={<AdminRegister />} />
+          <Route path="/admin/register" element={<AdminRegister />} />
 
-        {/* PROTECTED ADMIN ROUTES */}
+          {/* PROTECTED ADMIN ROUTES */}
 
-        <Route element={<ProtectedAdminRoute />}>
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route element={<ProtectedAdminRoute />}>
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
 
-          <Route path="/admin/products" element={<AdminProducts />} />
+            <Route path="/admin/products" element={<AdminProducts />} />
 
-          <Route path="/admin/categories" element={<AdminCategories />} />
+            <Route path="/admin/categories" element={<AdminCategories />} />
 
-          <Route path="/admin/inventory" element={<AdminInventory />} />
-        </Route>
+            <Route path="/admin/inventory" element={<AdminInventory />} />
+          </Route>
 
-        {/* STORE */}
+          {/* STORE */}
 
-        <Route path="/products/:id" element={<ProductDetails />} />
+          <Route path="/products/:id" element={<ProductDetails />} />
 
-        <Route path="/compare" element={<CompareProducts />} />
+          <Route path="/compare" element={<CompareProducts />} />
 
-        {/* AUTH */}
+          {/* AUTH */}
 
-        <Route path="/login" element={<Login onLogin={handleLogin} />} />
+          <Route path="/login" element={<Login onLogin={handleLogin} />} />
 
-        <Route path="/register" element={<Register />} />
+          <Route path="/register" element={<Register />} />
 
-        <Route path="/verify-email" element={<VerifyEmail />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
 
-        {/* PROFILE */}
+          {/* PROFILE */}
 
-        <Route
-          path="/profile"
-          element={
-            isLoggedIn ? (
-              <Profile onLogout={handleLogout} />
-            ) : (
-              <Navigate to="/login" replace />
-            )
-          }
-        />
+          <Route
+            path="/profile"
+            element={
+              isLoggedIn ? (
+                <Profile onLogout={handleLogout} />
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
 
-        <Route
-          path="/change-password"
-          element={
-            isLoggedIn ? <ChangePassword /> : <Navigate to="/login" replace />
-          }
-        />
+          <Route
+            path="/change-password"
+            element={
+              isLoggedIn ? <ChangePassword /> : <Navigate to="/login" replace />
+            }
+          />
 
-        {/* PASSWORD RECOVERY */}
+          {/* PASSWORD RECOVERY */}
 
-        <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
 
-        <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
 
-        {/* NOT FOUND */}
+          {/* NOT FOUND */}
 
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Suspense>
     </CompareProvider>
   );
 }

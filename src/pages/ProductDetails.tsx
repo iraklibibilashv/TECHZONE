@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { getProducts } from "../services/api";
+import { getProductById } from "../services/api";
 import type { Product } from "../types/product";
 import ProductReviews from "../components/ProductReview";
 
@@ -10,6 +10,7 @@ export default function ProductDetails() {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedImage, setSelectedImage] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -19,19 +20,20 @@ export default function ProductDetails() {
         setLoading(true);
         setError("");
         setProduct(null);
+        setSelectedImage(0);
 
-        const products = await getProducts();
+        const productId = Number(id);
 
-        if (cancelled) return;
-
-        const foundProduct = products.find((item) => item.id === Number(id));
-
-        if (!foundProduct) {
-          setError("Product not found.");
+        if (!id || !Number.isInteger(productId) || productId <= 0) {
+          setError("Invalid product ID.");
           return;
         }
 
-        setProduct(foundProduct);
+        const data = await getProductById(productId);
+
+        if (cancelled) return;
+
+        setProduct(data);
       } catch (err) {
         if (cancelled) return;
 
@@ -52,10 +54,26 @@ export default function ProductDetails() {
     };
   }, [id]);
 
+  const images = useMemo(() => {
+    if (!product) return [];
+
+    return [product.imageUrl, ...(product.imageUrls ?? [])].filter(
+      (url, index, all) => Boolean(url) && all.indexOf(url) === index,
+    );
+  }, [product]);
+
+  const specifications = product?.specifications
+    ? Object.entries(product.specifications)
+    : [];
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#090d16]">
-        <div className="h-12 w-12 animate-spin rounded-full border-4 border-blue-500/20 border-t-blue-500" />
+        <div
+          role="status"
+          aria-label="Loading product"
+          className="h-12 w-12 animate-spin rounded-full border-4 border-blue-500/20 border-t-blue-500"
+        />
       </div>
     );
   }
@@ -90,13 +108,52 @@ export default function ProductDetails() {
 
         {/* PRODUCT DETAILS */}
         <div className="mt-6 grid min-w-0 grid-cols-1 gap-6 sm:mt-10 sm:gap-8 lg:grid-cols-2 lg:gap-10">
-          {/* PRODUCT IMAGE */}
-          <div className="flex min-h-[260px] min-w-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-[#101622] p-4 sm:min-h-[350px] sm:rounded-3xl sm:p-8 lg:min-h-[400px] lg:p-10">
-            <img
-              src={product.imageUrl}
-              alt={product.name}
-              className="max-h-[260px] w-full max-w-full object-contain sm:max-h-[350px] lg:max-h-[400px]"
-            />
+          {/* IMAGE GALLERY */}
+          <div className="min-w-0">
+            {/* MAIN IMAGE */}
+            <div className="flex min-h-[260px] min-w-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-[#101622] p-4 sm:min-h-[350px] sm:rounded-3xl sm:p-8 lg:min-h-[400px] lg:p-10">
+              {images.length > 0 ? (
+                <img
+                  key={images[selectedImage]}
+                  src={images[selectedImage]}
+                  alt={`${product.name} - Image ${selectedImage + 1}`}
+                  loading={selectedImage === 0 ? "eager" : "lazy"}
+                  decoding="async"
+                  fetchPriority={selectedImage === 0 ? "high" : "auto"}
+                  className="max-h-[260px] w-full max-w-full object-contain sm:max-h-[350px] lg:max-h-[400px]"
+                />
+              ) : (
+                <span className="text-gray-500">No image available</span>
+              )}
+            </div>
+
+            {/* THUMBNAILS */}
+            {images.length > 1 && (
+              <div className="mt-4 grid grid-cols-4 gap-3 sm:grid-cols-5">
+                {images.map((image, index) => (
+                  <button
+                    key={image}
+                    type="button"
+                    onClick={() => setSelectedImage(index)}
+                    aria-label={`View image ${index + 1}`}
+                    aria-pressed={selectedImage === index}
+                    className={`flex aspect-square min-w-0 items-center justify-center overflow-hidden rounded-xl border-2 bg-[#101622] p-2 transition ${
+                      selectedImage === index
+                        ? "border-blue-500"
+                        : "border-white/10 hover:border-blue-500/50"
+                    }`}
+                  >
+                    <img
+                      src={image}
+                      alt={`${product.name} thumbnail ${index + 1}`}
+                      loading="lazy"
+                      decoding="async"
+                      className="h-full w-full object-contain"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* PRODUCT INFO */}
@@ -156,43 +213,64 @@ export default function ProductDetails() {
               <h2 className="text-lg font-bold">Product Information</h2>
 
               <div className="mt-5 space-y-4 text-sm">
-                <div className="flex min-w-0 justify-between gap-4">
-                  <span className="shrink-0 text-gray-400">Brand</span>
+                {[
+                  ["Brand", product.brand],
+                  ["Model", product.model],
+                  ["Category", product.category.name],
+                  ["Available Stock", String(product.stock)],
+                ].map(([label, value]) => (
+                  <div
+                    key={label}
+                    className="flex min-w-0 justify-between gap-4"
+                  >
+                    <span className="shrink-0 text-gray-400">{label}</span>
 
-                  <span className="min-w-0 break-words text-right">
-                    {product.brand}
-                  </span>
-                </div>
-
-                <div className="flex min-w-0 justify-between gap-4">
-                  <span className="shrink-0 text-gray-400">Model</span>
-
-                  <span className="min-w-0 break-words text-right">
-                    {product.model}
-                  </span>
-                </div>
-
-                <div className="flex min-w-0 justify-between gap-4">
-                  <span className="shrink-0 text-gray-400">Category</span>
-
-                  <span className="min-w-0 break-words text-right">
-                    {product.category.name}
-                  </span>
-                </div>
-
-                <div className="flex min-w-0 justify-between gap-4">
-                  <span className="shrink-0 text-gray-400">
-                    Available Stock
-                  </span>
-
-                  <span className="min-w-0 break-words text-right">
-                    {product.stock}
-                  </span>
-                </div>
+                    <span className="min-w-0 break-words text-right">
+                      {value}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
         </div>
+
+        {/* DESCRIPTION */}
+        {product.description && (
+          <section className="mt-8 min-w-0 rounded-2xl border border-white/10 bg-[#101622] p-5 sm:mt-12 sm:p-8">
+            <h2 className="text-xl font-bold sm:text-2xl">
+              Product Description
+            </h2>
+
+            <p className="mt-4 whitespace-pre-line break-words text-sm leading-7 text-gray-400 sm:text-base">
+              {product.description}
+            </p>
+          </section>
+        )}
+
+        {/* TECHNICAL SPECIFICATIONS */}
+        {specifications.length > 0 && (
+          <section className="mt-8 min-w-0 overflow-hidden rounded-2xl border border-white/10 bg-[#101622] p-5 sm:p-8">
+            <h2 className="text-xl font-bold sm:text-2xl">
+              Technical Specifications
+            </h2>
+
+            <div className="mt-6 divide-y divide-white/10">
+              {specifications.map(([key, value]) => (
+                <div
+                  key={key}
+                  className="grid grid-cols-1 gap-2 py-4 text-sm sm:grid-cols-[180px_minmax(0,1fr)] sm:gap-6"
+                >
+                  <span className="font-semibold text-gray-400">{key}</span>
+
+                  <span className="min-w-0 break-words text-white">
+                    {value}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* PRODUCT REVIEWS */}
         <div className="mt-8 min-w-0 sm:mt-12">

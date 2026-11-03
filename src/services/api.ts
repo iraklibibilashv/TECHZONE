@@ -479,3 +479,27 @@ export async function deleteReview(reviewId: number): Promise<void> {
     );
   }
 }
+
+export async function getProductById(id: number): Promise<Product> {
+  const response = await fetch(
+    `${import.meta.env.VITE_API_URL}/products/${id}`,
+    {
+      headers: {
+        Accept: "application/json",
+        "X-STEP-KEY": import.meta.env.VITE_API_KEY,
+      },
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      response.status === 404
+        ? "Product not found."
+        : "Failed to load product.",
+    );
+  }
+
+  const result: { data: Product } = await response.json();
+
+  return result.data;
+}
