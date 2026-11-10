@@ -1,4 +1,3 @@
-
 export default function Loader() {
   return (
     <div className="flex min-h-[350px] flex-col items-center justify-center gap-6">
@@ -13,9 +12,7 @@ export default function Loader() {
       </div>
 
       <div className="text-center">
-        <p className="text-lg font-semibold text-white">
-          Loading TECHZONE
-        </p>
+        <p className="text-lg font-semibold text-white">Loading TECHZONE</p>
 
         <p className="mt-2 animate-pulse text-sm text-gray-400">
           Preparing your shopping experience...

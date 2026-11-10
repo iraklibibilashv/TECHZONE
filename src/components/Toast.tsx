@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 
 export type ToastType = "success" | "error" | "info";
@@ -65,9 +64,7 @@ export default function Toast({ toast, onClose }: ToastProps) {
 
         <div className="min-w-0 flex-1">
           <p className="font-semibold">{toast.title}</p>
-          <p className="mt-1 text-sm text-gray-400">
-            {toast.message}
-          </p>
+          <p className="mt-1 text-sm text-gray-400">{toast.message}</p>
         </div>
 
         <button

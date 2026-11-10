@@ -6,6 +6,7 @@ import ConfirmModal from "../../components/ConfirmModal";
 
 import { getCategories } from "../../services/api";
 
+import { useQueryClient } from "@tanstack/react-query";
 import {
   createCategory,
   updateCategory,
@@ -27,6 +28,7 @@ const inputClass =
 const labelClass = "mb-2 block text-sm font-medium text-gray-300";
 
 export default function AdminCategories() {
+  const queryClient = useQueryClient();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -127,7 +129,21 @@ export default function AdminCategories() {
       setFormOpen(false);
       setEditingCategory(null);
 
+      // Refresh Admin Categories table
       await loadCategories();
+
+      // Invalidate related React Query caches
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ["categories"],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["products"],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["product"],
+        }),
+      ]);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save category.");
     } finally {
@@ -148,7 +164,21 @@ export default function AdminCategories() {
       setDeleteTarget(null);
       setSuccess("Category deleted successfully!");
 
+      // Refresh Admin Categories table
       await loadCategories();
+
+      // Invalidate related React Query caches
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ["categories"],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["products"],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["product"],
+        }),
+      ]);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to delete category.",

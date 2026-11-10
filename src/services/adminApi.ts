@@ -1,4 +1,3 @@
-
 const API_URL = import.meta.env.VITE_API_URL;
 const API_KEY = import.meta.env.VITE_API_KEY;
 
@@ -14,15 +13,13 @@ function getAdminHeaders(): HeadersInit {
     "Content-Type": "application/json",
     Accept: "application/json",
     "X-STEP-KEY": API_KEY,
-    ...(token
-      ? { Authorization: `Bearer ${token}` }
-      : {}),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 }
 
 async function adminRequest(
   endpoint: string,
-  credentials: AdminCredentials
+  credentials: AdminCredentials,
 ): Promise<unknown> {
   const response = await fetch(`${API_URL}${endpoint}`, {
     method: "POST",
@@ -35,9 +32,9 @@ async function adminRequest(
   if (!response.ok) {
     throw new Error(
       result?.detail ||
-      result?.message ||
-      result?.title ||
-      "Something went wrong."
+        result?.message ||
+        result?.title ||
+        "Something went wrong.",
     );
   }
 
@@ -81,14 +78,12 @@ export type ProductRequest = {
 async function adminCrudRequest<T>(
   endpoint: string,
   method: "POST" | "PUT" | "DELETE",
-  body?: unknown
+  body?: unknown,
 ): Promise<T> {
   const response = await fetch(`${API_URL}${endpoint}`, {
     method,
     headers: getAdminHeaders(),
-    ...(body !== undefined
-      ? { body: JSON.stringify(body) }
-      : {}),
+    ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
   });
 
   const result = await response.json().catch(() => null);
@@ -96,9 +91,9 @@ async function adminCrudRequest<T>(
   if (!response.ok) {
     throw new Error(
       result?.detail ||
-      result?.message ||
-      result?.title ||
-      "Admin request failed."
+        result?.message ||
+        result?.title ||
+        "Admin request failed.",
     );
   }
 
@@ -107,64 +102,34 @@ async function adminCrudRequest<T>(
 
 // CATEGORIES
 
-export async function createCategory(
-  data: CategoryRequest
-): Promise<Category> {
-  return adminCrudRequest<Category>(
-    "/categories",
-    "POST",
-    data
-  );
+export async function createCategory(data: CategoryRequest): Promise<Category> {
+  return adminCrudRequest<Category>("/categories", "POST", data);
 }
 
 export async function updateCategory(
   categoryId: number,
-  data: CategoryRequest
+  data: CategoryRequest,
 ): Promise<Category> {
-  return adminCrudRequest<Category>(
-    `/categories/${categoryId}`,
-    "PUT",
-    data
-  );
+  return adminCrudRequest<Category>(`/categories/${categoryId}`, "PUT", data);
 }
 
-export async function deleteCategory(
-  categoryId: number
-): Promise<void> {
-  await adminCrudRequest(
-    `/categories/${categoryId}`,
-    "DELETE"
-  );
+export async function deleteCategory(categoryId: number): Promise<void> {
+  await adminCrudRequest(`/categories/${categoryId}`, "DELETE");
 }
 
 // PRODUCTS
 
-export async function createProduct(
-  data: ProductRequest
-): Promise<Product> {
-  return adminCrudRequest<Product>(
-    "/products",
-    "POST",
-    data
-  );
+export async function createProduct(data: ProductRequest): Promise<Product> {
+  return adminCrudRequest<Product>("/products", "POST", data);
 }
 
 export async function updateProduct(
   productId: number,
-  data: ProductRequest
+  data: ProductRequest,
 ): Promise<Product> {
-  return adminCrudRequest<Product>(
-    `/products/${productId}`,
-    "PUT",
-    data
-  );
+  return adminCrudRequest<Product>(`/products/${productId}`, "PUT", data);
 }
 
-export async function deleteProduct(
-  productId: number
-): Promise<void> {
-  await adminCrudRequest(
-    `/products/${productId}`,
-    "DELETE"
-  );
+export async function deleteProduct(productId: number): Promise<void> {
+  await adminCrudRequest(`/products/${productId}`, "DELETE");
 }

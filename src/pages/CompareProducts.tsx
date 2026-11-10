@@ -59,37 +59,138 @@ export default function CompareProducts() {
           </div>
         ) : (
           <>
-            <p className="mb-3 text-xs text-gray-500 sm:hidden">
-              Swipe horizontally to compare products →
-            </p>
+            {/* MOBILE / TABLET */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:hidden">
+              {compareProducts.map((product) => (
+                <article
+                  key={product.id}
+                  className="flex min-w-0 flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#101622] p-4"
+                >
+                  {/* PRODUCT IMAGE */}
+                  <div className="flex h-44 items-center justify-center rounded-xl bg-white/5 p-3">
+                    <img
+                      src={product.imageUrl}
+                      alt={product.name}
+                      className="h-full w-full object-contain"
+                    />
+                  </div>
 
-            {/* SCROLLABLE COMPARISON TABLE */}
-            <div className="w-full min-w-0 overflow-x-auto overscroll-x-contain rounded-2xl border border-white/10 bg-[#101622] sm:rounded-3xl">
-              <table className="w-full min-w-[650px] border-collapse text-left">
+                  {/* PRODUCT INFO */}
+                  <h3 className="mt-4 break-words text-lg font-bold">
+                    {product.name}
+                  </h3>
+
+                  <p className="mt-1 text-sm text-gray-400">{product.brand}</p>
+
+                  {/* PRODUCT SPECIFICATIONS */}
+                  <div className="mt-5 flex-1 divide-y divide-white/10">
+                    <div className="flex min-w-0 items-start justify-between gap-3 py-3">
+                      <span className="shrink-0 text-sm text-gray-400">
+                        Price
+                      </span>
+                      <span className="min-w-0 break-words text-right font-bold text-blue-400">
+                        ₾{product.price.toLocaleString("en-US")}
+                      </span>
+                    </div>
+
+                    <div className="flex min-w-0 items-start justify-between gap-3 py-3">
+                      <span className="shrink-0 text-sm text-gray-400">
+                        Brand
+                      </span>
+                      <span className="min-w-0 break-words text-right text-sm">
+                        {product.brand}
+                      </span>
+                    </div>
+
+                    <div className="flex min-w-0 items-start justify-between gap-3 py-3">
+                      <span className="shrink-0 text-sm text-gray-400">
+                        Model
+                      </span>
+                      <span className="min-w-0 break-words text-right text-sm">
+                        {product.model}
+                      </span>
+                    </div>
+
+                    <div className="flex min-w-0 items-start justify-between gap-3 py-3">
+                      <span className="shrink-0 text-sm text-gray-400">
+                        Category
+                      </span>
+                      <span className="min-w-0 break-words text-right text-sm">
+                        {product.category?.name ?? "N/A"}
+                      </span>
+                    </div>
+
+                    <div className="flex min-w-0 items-start justify-between gap-3 py-3">
+                      <span className="text-sm text-gray-400">Rating</span>
+                      <span className="text-sm text-yellow-400">
+                        ★ {product.rating}
+                      </span>
+                    </div>
+
+                    <div className="flex min-w-0 items-start justify-between gap-3 py-3">
+                      <span className="text-sm text-gray-400">Stock</span>
+                      <span
+                        className={`text-right text-sm ${
+                          product.stock > 0
+                            ? "text-emerald-400"
+                            : "text-red-400"
+                        }`}
+                      >
+                        {product.stock > 0
+                          ? `${product.stock} available`
+                          : "Out of Stock"}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* ACTION BUTTONS */}
+                  <div className="mt-5 flex flex-col gap-3">
+                    <Link
+                      to={`/products/${product.id}`}
+                      className="rounded-xl bg-blue-600 px-4 py-3 text-center text-sm font-semibold transition hover:bg-blue-500"
+                    >
+                      View Product
+                    </Link>
+
+                    <button
+                      type="button"
+                      onClick={() => removeFromCompare(product.id)}
+                      className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-400 transition hover:bg-red-500/20"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
+
+            {/* DESKTOP COMPARISON TABLE */}
+            <div className="hidden w-full min-w-0 overflow-hidden rounded-3xl border border-white/10 bg-[#101622] lg:block">
+              <table className="w-full table-fixed border-collapse text-left">
                 <thead>
                   <tr>
-                    <th className="w-40 border-b border-white/10 p-4 text-gray-400 sm:p-5">
+                    <th className="w-36 border-b border-white/10 p-4 text-sm text-gray-400 xl:w-40 xl:p-5">
                       Product
                     </th>
 
                     {compareProducts.map((product) => (
                       <th
                         key={product.id}
-                        className="min-w-48 border-b border-white/10 p-4 align-top sm:p-5"
+                        className="min-w-0 border-b border-white/10 p-4 align-top xl:p-5"
                       >
-                        <div className="flex flex-col items-start gap-4">
+                        <div className="flex min-w-0 flex-col items-start gap-4">
                           <img
                             src={product.imageUrl}
                             alt={product.name}
-                            className="h-28 w-full object-contain sm:h-36"
+                            className="h-28 w-full max-w-full object-contain xl:h-36"
                           />
 
-                          <div className="min-w-0">
-                            <h3 className="break-words text-base font-bold sm:text-lg">
+                          <div className="min-w-0 w-full">
+                            <h3 className="break-words text-base font-bold xl:text-lg">
                               {product.name}
                             </h3>
 
-                            <p className="mt-1 text-sm text-gray-400">
+                            <p className="mt-1 break-words text-sm text-gray-400">
                               {product.brand}
                             </p>
                           </div>
@@ -97,7 +198,7 @@ export default function CompareProducts() {
                           <button
                             type="button"
                             onClick={() => removeFromCompare(product.id)}
-                            className="text-sm font-semibold text-red-400 hover:text-red-300"
+                            className="rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm font-semibold text-red-400 transition hover:bg-red-500/20"
                           >
                             Remove
                           </button>
@@ -112,7 +213,7 @@ export default function CompareProducts() {
                     {
                       label: "Price",
                       render: (p: (typeof compareProducts)[number]) =>
-                        `$${p.price.toFixed(2)}`,
+                        `₾${p.price.toLocaleString("en-US")}`,
                     },
                     {
                       label: "Brand",
@@ -139,14 +240,14 @@ export default function CompareProducts() {
                     },
                   ].map((row) => (
                     <tr key={row.label}>
-                      <th className="border-b border-white/10 p-4 text-sm font-semibold text-gray-400 sm:p-5">
+                      <th className="break-words border-b border-white/10 p-4 text-sm font-semibold text-gray-400 xl:p-5">
                         {row.label}
                       </th>
 
                       {compareProducts.map((product) => (
                         <td
                           key={product.id}
-                          className="break-words border-b border-white/10 p-4 text-sm text-gray-200 sm:p-5"
+                          className="break-words border-b border-white/10 p-4 text-sm text-gray-200 xl:p-5"
                         >
                           {row.render(product)}
                         </td>
@@ -155,13 +256,15 @@ export default function CompareProducts() {
                   ))}
 
                   <tr>
-                    <th className="p-4 text-gray-400 sm:p-5">Details</th>
+                    <th className="p-4 text-sm text-gray-400 xl:p-5">
+                      Details
+                    </th>
 
                     {compareProducts.map((product) => (
-                      <td key={product.id} className="p-4 sm:p-5">
+                      <td key={product.id} className="p-4 xl:p-5">
                         <Link
                           to={`/products/${product.id}`}
-                          className="inline-block rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold transition hover:bg-blue-500"
+                          className="inline-block max-w-full rounded-xl bg-blue-600 px-3 py-2.5 text-center text-sm font-semibold transition hover:bg-blue-500 xl:px-4"
                         >
                           View Product
                         </Link>

@@ -1,4 +1,3 @@
-
 import type { Category } from "./category";
 
 export interface Product {

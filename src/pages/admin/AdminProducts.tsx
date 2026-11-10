@@ -15,6 +15,7 @@ import {
 import type { ProductRequest } from "../../services/adminApi";
 import type { Product } from "../../types/product";
 import type { Category } from "../../types/category";
+import { useQueryClient } from "@tanstack/react-query";
 
 type ProductForm = {
   name: string;
@@ -52,6 +53,7 @@ const inputClass =
 const labelClass = "mb-2 block text-sm font-medium text-gray-300";
 
 export default function AdminProducts() {
+  const queryClient = useQueryClient();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
 
@@ -253,8 +255,10 @@ export default function AdminProducts() {
     setSaving(true);
 
     try {
-      if (editingProduct) {
-        await updateProduct(editingProduct.id, payload);
+      const editedProductId = editingProduct?.id;
+
+      if (editedProductId !== undefined) {
+        await updateProduct(editedProductId, payload);
         setSuccess("Product updated successfully!");
       } else {
         await createProduct(payload);
@@ -264,7 +268,18 @@ export default function AdminProducts() {
       setFormOpen(false);
       setEditingProduct(null);
 
+      // Refresh admin table
       await loadData();
+
+      // Refresh HomePage product cache
+      await queryClient.invalidateQueries({
+        queryKey: ["products"],
+      });
+
+      // Refresh ProductDetails cache
+      await queryClient.invalidateQueries({
+        queryKey: ["product"],
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save product.");
     } finally {
@@ -285,7 +300,25 @@ export default function AdminProducts() {
       setDeleteTarget(null);
       setSuccess("Product deleted successfully!");
 
+      // Refresh admin table
       await loadData();
+
+      // Refresh HomePage product cache
+      await queryClient.invalidateQueries({
+        queryKey: ["products"],
+      });
+
+      // Remove cached details of deleted product
+      queryClient.removeQueries({
+        queryKey: ["product", deleteTarget.id],
+        exact: true,
+        type: "inactive",
+      });
+
+      // Refresh other cached product details
+      await queryClient.invalidateQueries({
+        queryKey: ["product"],
+      });
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to delete product.",

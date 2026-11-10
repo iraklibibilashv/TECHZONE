@@ -69,7 +69,7 @@ export default function VerifyEmail() {
   }
 
   return (
-    <div className="flex min-h-screen w-full min-w-0 items-center justify-center bg-[#090d16] px-4 py-8 sm:py-12">
+    <div className="flex min-h-[100dvh] w-full min-w-0 items-center justify-center bg-[#090d16] px-4 py-8 sm:py-12">
       <div className="w-full min-w-0 max-w-md">
         {/* LOGO */}
         <Link
@@ -116,6 +116,7 @@ export default function VerifyEmail() {
             </div>
 
             {/* VERIFICATION CODE */}
+
             <div className="min-w-0">
               <label
                 htmlFor="code"
@@ -127,6 +128,7 @@ export default function VerifyEmail() {
               <input
                 id="code"
                 type="text"
+                inputMode="numeric"
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
                 placeholder="Enter verification code"

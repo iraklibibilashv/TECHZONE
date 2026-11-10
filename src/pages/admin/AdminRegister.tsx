@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -42,9 +41,7 @@ export default function AdminRegister() {
       });
     } catch (err) {
       setError(
-        err instanceof Error
-          ? err.message
-          : "Admin registration failed."
+        err instanceof Error ? err.message : "Admin registration failed.",
       );
     } finally {
       setLoading(false);
@@ -58,10 +55,7 @@ export default function AdminRegister() {
     <div className="flex min-h-screen items-center justify-center bg-[#090d16] px-4 py-10 text-white">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <Link
-            to="/"
-            className="text-3xl font-black tracking-tight"
-          >
+          <Link to="/" className="text-3xl font-black tracking-tight">
             TECH<span className="text-blue-500">ZONE</span>
           </Link>
 
@@ -69,9 +63,7 @@ export default function AdminRegister() {
             Admin Portal
           </div>
 
-          <h1 className="mt-6 text-3xl font-black">
-            Admin Registration
-          </h1>
+          <h1 className="mt-6 text-3xl font-black">Admin Registration</h1>
 
           <p className="mt-3 text-sm text-gray-400">
             Create an administrator account.
@@ -135,9 +127,7 @@ export default function AdminRegister() {
                 minLength={6}
                 autoComplete="new-password"
                 value={confirmPassword}
-                onChange={(e) =>
-                  setConfirmPassword(e.target.value)
-                }
+                onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Confirm password"
                 className={inputClass}
               />

@@ -1,4 +1,3 @@
-
 const ADMIN_TOKEN_KEY = "adminAccessToken";
 const ADMIN_AUTH_EVENT = "admin-auth-changed";
 
@@ -12,8 +11,34 @@ export function saveAdminToken(token: string): void {
   window.dispatchEvent(new Event(ADMIN_AUTH_EVENT));
 }
 
+export function getAdminTokenExpiration(): number | null {
+  const token = getAdminToken();
+
+  if (!token) return null;
+
+  try {
+    const payload = token.split(".")[1];
+
+    if (!payload) return null;
+
+    const base64 = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const decoded = JSON.parse(atob(base64));
+
+    if (typeof decoded.exp !== "number") {
+      return null;
+    }
+
+    return decoded.exp * 1000;
+  } catch {
+    return null;
+  }
+}
+
 export function isAdminAuthenticated(): boolean {
-  return Boolean(getAdminToken());
+  const token = getAdminToken();
+  const expiration = getAdminTokenExpiration();
+
+  return Boolean(token) && expiration !== null && Date.now() < expiration;
 }
 
 export function adminLogout(): void {
@@ -22,9 +47,7 @@ export function adminLogout(): void {
   window.dispatchEvent(new Event(ADMIN_AUTH_EVENT));
 }
 
-export function subscribeToAdminAuth(
-  callback: () => void
-): () => void {
+export function subscribeToAdminAuth(callback: () => void): () => void {
   window.addEventListener(ADMIN_AUTH_EVENT, callback);
   window.addEventListener("storage", callback);
 

@@ -1,12 +1,8 @@
-
 import ProductSkeleton from "./ProductSkeleton";
 
 export default function ProductSkeletonGrid() {
   return (
-    <section
-      id="products"
-      className="mx-auto max-w-7xl px-6 py-12"
-    >
+    <section id="products" className="mx-auto max-w-7xl px-6 py-12">
       <div className="mb-8 flex items-center justify-between">
         <div>
           <div className="mb-3 h-8 w-48 animate-pulse rounded bg-white/10" />

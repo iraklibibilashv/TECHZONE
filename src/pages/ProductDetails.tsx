@@ -1,59 +1,70 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import { getProductById } from "../services/api";
-import type { Product } from "../types/product";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Link, useNavigate, useParams } from "react-router-dom";
+
+import { getProductById, addProductToCart } from "../services/api";
+
+import { isAuthenticated } from "../services/auth";
 import ProductReviews from "../components/ProductReview";
 
 export default function ProductDetails() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-  const [product, setProduct] = useState<Product | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const productId = Number(id);
+
+  const validProductId =
+    Boolean(id) && Number.isInteger(productId) && productId > 0;
+
+  // REACT QUERY - PRODUCT DATA
+  const {
+    data: product = null,
+    isPending,
+    error: queryError,
+  } = useQuery({
+    queryKey: ["product", productId],
+    queryFn: () => getProductById(productId),
+    enabled: validProductId,
+  });
+
+  const loading = validProductId && isPending;
+
+  // IMAGE GALLERY
   const [selectedImage, setSelectedImage] = useState(0);
 
+  // ADD TO CART STATE
+  const addToCartMutation = useMutation({
+    mutationFn: (productId: number) => addProductToCart(productId, 1),
+
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["cart"],
+      });
+    },
+  });
+
+  const addingToCart = addToCartMutation.isPending;
+  const [cartMessage, setCartMessage] = useState("");
+  const [cartError, setCartError] = useState("");
+
+  // RESET WHEN PRODUCT CHANGES
   useEffect(() => {
-    let cancelled = false;
+    setSelectedImage(0);
+    setCartMessage("");
+    setCartError("");
+  }, [productId]);
 
-    async function loadProduct() {
-      try {
-        setLoading(true);
-        setError("");
-        setProduct(null);
-        setSelectedImage(0);
+  // ERROR HANDLING
+  const error = !validProductId
+    ? "Invalid product ID."
+    : queryError instanceof Error
+      ? queryError.message
+      : queryError
+        ? "Failed to load product."
+        : "";
 
-        const productId = Number(id);
-
-        if (!id || !Number.isInteger(productId) || productId <= 0) {
-          setError("Invalid product ID.");
-          return;
-        }
-
-        const data = await getProductById(productId);
-
-        if (cancelled) return;
-
-        setProduct(data);
-      } catch (err) {
-        if (cancelled) return;
-
-        setError(
-          err instanceof Error ? err.message : "Failed to load product.",
-        );
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    }
-
-    loadProduct();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [id]);
-
+  // PRODUCT IMAGES
   const images = useMemo(() => {
     if (!product) return [];
 
@@ -62,10 +73,38 @@ export default function ProductDetails() {
     );
   }, [product]);
 
+  // TECHNICAL SPECIFICATIONS
   const specifications = product?.specifications
     ? Object.entries(product.specifications)
     : [];
 
+  // ADD TO CART
+
+  async function handleAddToCart() {
+    if (!product || addingToCart || product.stock <= 0) {
+      return;
+    }
+
+    if (!isAuthenticated()) {
+      navigate("/login");
+      return;
+    }
+
+    setCartMessage("");
+    setCartError("");
+
+    try {
+      await addToCartMutation.mutateAsync(product.id);
+
+      setCartMessage("Added to Cart!");
+    } catch (err) {
+      setCartError(
+        err instanceof Error ? err.message : "Failed to add product to cart.",
+      );
+    }
+  }
+
+  // LOADING
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#090d16]">
@@ -78,6 +117,7 @@ export default function ProductDetails() {
     );
   }
 
+  // ERROR OR PRODUCT NOT FOUND
   if (error || !product) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-5 bg-[#090d16] px-4 text-center text-white">
@@ -117,7 +157,7 @@ export default function ProductDetails() {
                   key={images[selectedImage]}
                   src={images[selectedImage]}
                   alt={`${product.name} - Image ${selectedImage + 1}`}
-                  loading={selectedImage === 0 ? "eager" : "lazy"}
+                  loading="eager"
                   decoding="async"
                   fetchPriority={selectedImage === 0 ? "high" : "auto"}
                   className="max-h-[260px] w-full max-w-full object-contain sm:max-h-[350px] lg:max-h-[400px]"
@@ -164,7 +204,7 @@ export default function ProductDetails() {
             </p>
 
             {/* PRODUCT NAME */}
-            <h1 className="mt-4 break-words text-2xl font-black leading-tight sm:text-3xl md:text-4xl">
+            <h1 className="mt-4 break-words text-xl font-black leading-tight min-[400px]:text-2xl sm:text-3xl lg:text-4xl">
               {product.name}
             </h1>
 
@@ -208,6 +248,34 @@ export default function ProductDetails() {
               </p>
             </div>
 
+            {/* ADD TO CART */}
+            <div className="mt-6">
+              <button
+                type="button"
+                onClick={handleAddToCart}
+                disabled={addingToCart || product.stock <= 0}
+                className="w-full rounded-xl bg-blue-600 px-6 py-4 text-base font-bold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {addingToCart
+                  ? "Adding..."
+                  : product.stock <= 0
+                    ? "Out of Stock"
+                    : "Add to Cart"}
+              </button>
+
+              {cartMessage && (
+                <p role="status" className="mt-3 text-sm text-emerald-400">
+                  {cartMessage}
+                </p>
+              )}
+
+              {cartError && (
+                <p role="alert" className="mt-3 text-sm text-red-400">
+                  {cartError}
+                </p>
+              )}
+            </div>
+
             {/* PRODUCT INFORMATION */}
             <div className="mt-6 min-w-0 overflow-hidden rounded-2xl border border-white/10 bg-[#101622] p-4 sm:mt-8 sm:p-6">
               <h2 className="text-lg font-bold">Product Information</h2>
@@ -221,11 +289,11 @@ export default function ProductDetails() {
                 ].map(([label, value]) => (
                   <div
                     key={label}
-                    className="flex min-w-0 justify-between gap-4"
+                    className="flex min-w-0 flex-col gap-1 min-[400px]:flex-row min-[400px]:justify-between min-[400px]:gap-4"
                   >
                     <span className="shrink-0 text-gray-400">{label}</span>
 
-                    <span className="min-w-0 break-words text-right">
+                    <span className="min-w-0 break-words text-left min-[400px]:text-right">
                       {value}
                     </span>
                   </div>

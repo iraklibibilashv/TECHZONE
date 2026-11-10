@@ -49,7 +49,7 @@ export default function Login({ onLogin }: LoginProps) {
   }
 
   return (
-    <div className="flex min-h-screen w-full min-w-0 items-center justify-center bg-[#090d16] px-4 py-8 sm:py-12">
+    <div className="flex min-h-[100dvh] w-full min-w-0 items-center justify-center bg-[#090d16] px-4 py-8 sm:py-12">
       <div className="w-full min-w-0 max-w-md">
         {/* LOGO */}
         <Link

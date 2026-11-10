@@ -1,11 +1,8 @@
-
 type HeroProps = {
   onViewAllProducts: () => void;
 };
 
-export default function Hero({
-  onViewAllProducts,
-}: HeroProps) {
+export default function Hero({ onViewAllProducts }: HeroProps) {
   return (
     <section
       id="home"
@@ -57,9 +54,7 @@ export default function Hero({
           Technology
           <br />
           That Moves
-          <span className="text-blue-500">
-            {" "}You Forward.
-          </span>
+          <span className="text-blue-500"> You Forward.</span>
         </h1>
 
         {/* DESCRIPTION */}
@@ -72,8 +67,8 @@ export default function Hero({
             md:mt-6
           "
         >
-          Discover the latest tech, find your perfect product,
-          and upgrade your everyday experience.
+          Discover the latest tech, find your perfect product, and upgrade your
+          everyday experience.
         </p>
 
         {/* BUTTON */}
@@ -105,30 +100,18 @@ export default function Hero({
           "
         >
           <div className="min-w-0">
-            <p className="text-lg font-bold text-white sm:text-2xl">
-              100%
-            </p>
-            <p className="mt-1 text-xs text-gray-500 sm:text-sm">
-              Quality
-            </p>
+            <p className="text-lg font-bold text-white sm:text-2xl">100%</p>
+            <p className="mt-1 text-xs text-gray-500 sm:text-sm">Quality</p>
           </div>
 
           <div className="min-w-0">
-            <p className="text-lg font-bold text-white sm:text-2xl">
-              24/7
-            </p>
-            <p className="mt-1 text-xs text-gray-500 sm:text-sm">
-              Support
-            </p>
+            <p className="text-lg font-bold text-white sm:text-2xl">24/7</p>
+            <p className="mt-1 text-xs text-gray-500 sm:text-sm">Support</p>
           </div>
 
           <div className="min-w-0">
-            <p className="text-lg font-bold text-white sm:text-2xl">
-              Fast
-            </p>
-            <p className="mt-1 text-xs text-gray-500 sm:text-sm">
-              Delivery
-            </p>
+            <p className="text-lg font-bold text-white sm:text-2xl">Fast</p>
+            <p className="mt-1 text-xs text-gray-500 sm:text-sm">Delivery</p>
           </div>
         </div>
       </div>

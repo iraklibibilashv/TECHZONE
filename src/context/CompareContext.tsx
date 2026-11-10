@@ -1,4 +1,3 @@
-
 import {
   createContext,
   useContext,
@@ -17,33 +16,22 @@ type CompareContextType = {
   isCompared: (productId: number) => boolean;
 };
 
-const CompareContext = createContext<CompareContextType | undefined>(
-  undefined
-);
+const CompareContext = createContext<CompareContextType | undefined>(undefined);
 
 const STORAGE_KEY = "techzone-compare-products";
 
-export function CompareProvider({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export function CompareProvider({ children }: { children: ReactNode }) {
   const [compareProducts, setCompareProducts] = useState<Product[]>(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
-      return stored
-        ? (JSON.parse(stored) as Product[]).slice(0, 3)
-        : [];
+      return stored ? (JSON.parse(stored) as Product[]).slice(0, 3) : [];
     } catch {
       return [];
     }
   });
 
   useEffect(() => {
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(compareProducts)
-    );
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(compareProducts));
   }, [compareProducts]);
 
   function addToCompare(product: Product) {
@@ -62,7 +50,7 @@ export function CompareProvider({
 
   function removeFromCompare(productId: number) {
     setCompareProducts((prev) =>
-      prev.filter((product) => product.id !== productId)
+      prev.filter((product) => product.id !== productId),
     );
   }
 
@@ -71,9 +59,7 @@ export function CompareProvider({
   }
 
   function isCompared(productId: number) {
-    return compareProducts.some(
-      (product) => product.id === productId
-    );
+    return compareProducts.some((product) => product.id === productId);
   }
 
   return (
@@ -95,9 +81,7 @@ export function useCompare() {
   const context = useContext(CompareContext);
 
   if (!context) {
-    throw new Error(
-      "useCompare must be used inside CompareProvider"
-    );
+    throw new Error("useCompare must be used inside CompareProvider");
   }
 
   return context;

@@ -7,60 +7,43 @@ import {
   useRef,
   useState,
 } from "react";
-
-import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
-
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCart } from "./hooks/useCart";
+import { useFavorites } from "./hooks/useFavorites";
+import { Routes, Route, useNavigate } from "react-router-dom";
 import Header from "./components/Header";
-
 import Hero from "./components/Hero";
-
 import Categories from "./components/Categories";
-
 import ProductGrid from "./components/ProductGrid";
-
 import Footer from "./components/Footer";
-
 import CartSidebar from "./components/CartSideBar";
-
 import WishlistSidebar from "./components/WishlistSideBar";
-
 import ProductSkeletonGrid from "./components/ProductSkeletonGrid";
-
 import ProtectedAdminRoute from "./components/admin/ProtectedAdminRoute";
-
 import { CompareProvider } from "./context/CompareContext";
-
+import ConfirmModal from "./components/ConfirmModal";
 import AdvancedProductFilters, {
   DEFAULT_ADVANCED_FILTERS,
   type AdvancedFilters,
 } from "./components/AdvancedProductFilters";
-
 import {
   getProducts,
   getCategories,
-  getCart,
   addProductToCart,
   updateCartQuantity,
   removeProductFromCart,
-  getFavorites,
   addToFavorites,
   removeFromFavorites,
   checkout,
 } from "./services/api";
 
 import { isAuthenticated, logout } from "./services/auth";
-
 import type { Product } from "./types/product";
-
-import type { Category } from "./types/category";
-
 import type { CartItem } from "./types/cart";
-
 import Toast from "./components/Toast";
-
 import type { ToastData, ToastType } from "./components/Toast";
-
-// Load route pages only when the user visits them.
+import ProtectedRoute from "./components/ProtectedRoute";
+// LAZY LOADED PAGES
 const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
 const VerifyEmail = lazy(() => import("./pages/VerifyEmail"));
@@ -76,448 +59,466 @@ const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
 const AdminRegister = lazy(() => import("./pages/admin/AdminRegister"));
 const AdminInventory = lazy(() => import("./pages/admin/AdminInventory"));
 const CompareProducts = lazy(() => import("./pages/CompareProducts"));
-
+const NotFound = lazy(() => import("./pages/NotFound"));
 type HomePageProps = {
   isLoggedIn: boolean;
-
   onLogout: () => void;
 };
-
 function HomePage({ isLoggedIn, onLogout }: HomePageProps) {
   const navigate = useNavigate();
-
-  const [products, setProducts] = useState<Product[]>([]);
-
-  const [categories, setCategories] = useState<Category[]>([]);
-
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
-
-  const [favorites, setFavorites] = useState<Product[]>([]);
-
+  const queryClient = useQueryClient();
+  const [confirmClear, setConfirmClear] = useState<"cart" | "wishlist" | null>(
+    null,
+  );
+  // REACT QUERY - PRODUCTS
+  const {
+    data: products = [],
+    isPending: productsLoading,
+    error: productsError,
+  } = useQuery({
+    queryKey: ["products"],
+    queryFn: getProducts,
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+  // REACT QUERY - CATEGORIES
+  const {
+    data: categories = [],
+    isPending: categoriesLoading,
+    error: categoriesError,
+  } = useQuery({
+    queryKey: ["categories"],
+    queryFn: getCategories,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+  const loading = productsLoading || categoriesLoading;
+  const queryError = productsError ?? categoriesError;
+  const error =
+    queryError instanceof Error
+      ? queryError.message
+      : queryError
+        ? "Failed to load store data."
+        : "";
+  // CART - REACT QUERY
+  const {
+    data: cartResponse,
+    isPending: cartPending,
+    error: cartQueryError,
+  } = useCart(isLoggedIn);
+  const cartItems = useMemo(
+    () => cartResponse?.data.items ?? [],
+    [cartResponse],
+  );
+  const cartLoading = isLoggedIn && cartPending;
+  const cartLoadError =
+    cartQueryError instanceof Error
+      ? cartQueryError.message
+      : cartQueryError
+        ? "Failed to load cart."
+        : "";
+  // WISHLIST - REACT QUERY
+  const {
+    data: favorites = [],
+    isPending: favoritesPending,
+    error: favoritesQueryError,
+  } = useFavorites(isLoggedIn);
+  const wishlistLoading = isLoggedIn && favoritesPending;
+  const wishlistLoadError =
+    favoritesQueryError instanceof Error
+      ? favoritesQueryError.message
+      : favoritesQueryError
+        ? "Failed to load wishlist."
+        : "";
+  // SEARCH AND FILTERS
   const [searchQuery, setSearchQuery] = useState("");
-
   const [selectedCategory, setSelectedCategory] = useState("All");
-
   const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilters>({
     ...DEFAULT_ADVANCED_FILTERS,
   });
-
-  const [loading, setLoading] = useState(true);
-
-  const [error, setError] = useState("");
-
+  // CART STATE
   const [cartOpen, setCartOpen] = useState(false);
-
-  const [cartLoading, setCartLoading] = useState(false);
-
   const [cartError, setCartError] = useState("");
-
   const [updatingId, setUpdatingId] = useState<number | null>(null);
-
   const [addingToCartId, setAddingToCartId] = useState<number | null>(null);
-
+  const [clearingCart, setClearingCart] = useState(false);
+  const [clearingWishlist, setClearingWishlist] = useState(false);
+  // WISHLIST STATE
   const [wishlistOpen, setWishlistOpen] = useState(false);
-
-  const [wishlistLoading, setWishlistLoading] = useState(false);
-
   const [wishlistError, setWishlistError] = useState("");
-
   const [updatingFavoriteId, setUpdatingFavoriteId] = useState<number | null>(
     null,
   );
-
+  // CHECKOUT
   const [checkoutLoading, setCheckoutLoading] = useState(false);
-
   const [checkoutSuccess, setCheckoutSuccess] = useState("");
-
   const cartBusy = useRef(false);
-
   const favoriteBusy = useRef(false);
-
   const checkoutBusy = useRef(false);
-
+  // PAGINATION
   const [visibleCount, setVisibleCount] = useState(12);
-
+  // TOAST
   const [toast, setToast] = useState<ToastData | null>(null);
-
   const closeToast = useCallback(() => {
     setToast(null);
   }, []);
-
-  function showToast(type: ToastType, title: string, message: string) {
-    setToast({
-      id: Date.now(),
-
-      type,
-
-      title,
-
-      message,
-    });
-  }
-
-  // LOAD PRODUCTS AND CATEGORIES
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadData() {
-      try {
-        setLoading(true);
-
-        setError("");
-
-        const [productsData, categoriesData] = await Promise.all([
-          getProducts(),
-
-          getCategories(),
-        ]);
-
-        if (cancelled) return;
-
-        setProducts(productsData);
-
-        setCategories(categoriesData);
-      } catch (err) {
-        if (cancelled) return;
-
-        setError(
-          err instanceof Error ? err.message : "Failed to load store data.",
-        );
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    }
-
-    loadData();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  // LOAD CART AND FAVORITES AFTER LOGIN
-
+  const showToast = useCallback(
+    (type: ToastType, title: string, message: string) => {
+      setToast({
+        id: Date.now(),
+        type,
+        title,
+        message,
+      });
+    },
+    [],
+  );
+  // RESET LOCAL UI STATE AFTER LOGOUT
   useEffect(() => {
     if (!isLoggedIn) {
-      setCartItems([]);
-
-      setFavorites([]);
-
       setCartOpen(false);
-
       setWishlistOpen(false);
-
       setCartError("");
-
       setWishlistError("");
-
       setCheckoutSuccess("");
-
-      return;
     }
-
-    let cancelled = false;
-
-    async function loadUserData() {
-      setCartLoading(true);
-
-      setWishlistLoading(true);
-
-      const [cartResult, favoritesResult] = await Promise.allSettled([
-        getCart(),
-
-        getFavorites(),
-      ]);
-
-      if (cancelled) return;
-
-      if (cartResult.status === "fulfilled") {
-        setCartItems(cartResult.value.data.items);
-
-        setCartError("");
-      } else {
-        setCartError(
-          cartResult.reason instanceof Error
-            ? cartResult.reason.message
-            : "Failed to load cart.",
-        );
-      }
-
-      if (favoritesResult.status === "fulfilled") {
-        setFavorites(favoritesResult.value);
-
-        setWishlistError("");
-      } else {
-        setWishlistError(
-          favoritesResult.reason instanceof Error
-            ? favoritesResult.reason.message
-            : "Failed to load wishlist.",
-        );
-      }
-
-      setCartLoading(false);
-
-      setWishlistLoading(false);
-    }
-
-    loadUserData();
-
-    return () => {
-      cancelled = true;
-    };
   }, [isLoggedIn]);
+  // CART MUTATIONS
+  const addCartMutation = useMutation({
+    mutationFn: ({
+      productId,
+      quantity,
+    }: {
+      productId: number;
+      quantity: number;
+    }) => addProductToCart(productId, quantity),
 
-  async function refreshCart() {
-    const result = await getCart();
+    networkMode: "always",
+    retry: false,
 
-    setCartItems(result.data.items);
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["cart"] });
+    },
+  });
+  const { mutateAsync: addCartAsync } = addCartMutation;
+
+  const quantityMutation = useMutation({
+    mutationFn: ({ itemId, quantity }: { itemId: number; quantity: number }) =>
+      updateCartQuantity(itemId, quantity),
+
+    networkMode: "always",
+    retry: false,
+
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["cart"],
+      });
+    },
+  });
+
+  const removeCartMutation = useMutation({
+    mutationFn: (productId: number) => removeProductFromCart(productId),
+
+    networkMode: "always",
+    retry: false,
+
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["cart"] });
+    },
+  });
+  const checkoutMutation = useMutation({
+    mutationFn: checkout,
+
+    networkMode: "always",
+    retry: false,
+
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["cart"] }),
+        queryClient.invalidateQueries({ queryKey: ["products"] }),
+        queryClient.invalidateQueries({ queryKey: ["product"] }),
+      ]);
+    },
+  });
+  // WISHLIST MUTATION
+
+  const favoriteMutation = useMutation({
+    mutationFn: async ({
+      productId,
+      remove,
+    }: {
+      productId: number;
+      remove: boolean;
+    }) => {
+      if (remove) {
+        await removeFromFavorites(productId);
+      } else {
+        await addToFavorites(productId);
+      }
+    },
+
+    networkMode: "always",
+    retry: false,
+
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["favorites"],
+      });
+    },
+  });
+
+  const { mutateAsync: toggleFavoriteAsync } = favoriteMutation;
+
+  async function clearCart() {
+    if (
+      cartBusy.current ||
+      checkoutBusy.current ||
+      clearingCart ||
+      !cartItems.length
+    )
+      return;
+    cartBusy.current = true;
+    setClearingCart(true);
+    setCartError("");
+    setCheckoutSuccess("");
+    try {
+      const results = await Promise.allSettled(
+        cartItems.map((item) => removeProductFromCart(item.id)),
+      );
+      const failed = results.filter(
+        (result) => result.status === "rejected",
+      ).length;
+      if (failed) {
+        setCartError(
+          `${failed} product(s) could not be removed. Please try again.`,
+        );
+        showToast(
+          "error",
+          "Clear Cart Incomplete",
+          `${failed} product(s) could not be removed.`,
+        );
+      } else {
+        showToast(
+          "success",
+          "Cart Cleared",
+          "All products were removed from your cart.",
+        );
+      }
+    } finally {
+      try {
+        await queryClient.invalidateQueries({
+          queryKey: ["cart"],
+        });
+      } catch {
+        setCartError(
+          "Cart changed, but refreshing it failed. Please reload the page.",
+        );
+      }
+      setClearingCart(false);
+      cartBusy.current = false;
+    }
   }
-
-  async function refreshFavorites() {
-    const result = await getFavorites();
-
-    setFavorites(result);
+  async function clearWishlist() {
+    if (favoriteBusy.current || clearingWishlist || !favorites.length) return;
+    favoriteBusy.current = true;
+    setClearingWishlist(true);
+    setWishlistError("");
+    try {
+      const results = await Promise.allSettled(
+        favorites.map((product) => removeFromFavorites(product.id)),
+      );
+      const failed = results.filter(
+        (result) => result.status === "rejected",
+      ).length;
+      if (failed) {
+        setWishlistError(
+          `${failed} product(s) could not be removed. Please try again.`,
+        );
+        showToast(
+          "error",
+          "Clear Wishlist Incomplete",
+          `${failed} product(s) could not be removed.`,
+        );
+      } else {
+        showToast(
+          "success",
+          "Wishlist Cleared",
+          "All products were removed from your wishlist.",
+        );
+      }
+    } finally {
+      try {
+        await queryClient.invalidateQueries({
+          queryKey: ["favorites"],
+        });
+      } catch {
+        setWishlistError(
+          "Wishlist changed, but refreshing it failed. Please reload the page.",
+        );
+      }
+      setClearingWishlist(false);
+      favoriteBusy.current = false;
+    }
   }
-
+  // OPEN CART
   function openCart() {
     if (!isLoggedIn) {
       navigate("/login");
-
       return;
     }
-
     setWishlistOpen(false);
-
     setCartOpen(true);
   }
-
+  // OPEN WISHLIST
   function openWishlist() {
     if (!isLoggedIn) {
       navigate("/login");
-
       return;
     }
-
     setCartOpen(false);
-
     setWishlistOpen(true);
   }
-
   // VIEW ALL PRODUCTS
-
   function handleViewAllProducts() {
     setSelectedCategory("All");
-
     setSearchQuery("");
-
     requestAnimationFrame(() => {
       document.getElementById("products")?.scrollIntoView({
         behavior: "smooth",
-
         block: "start",
       });
     });
   }
-
   // ADD TO CART
-
-  async function addToCart(product: Product) {
-    if (!isLoggedIn) {
-      navigate("/login");
-
-      return;
-    }
-
-    if (product.stock <= 0 || cartBusy.current || checkoutBusy.current) {
-      return;
-    }
-
-    const existingItem = cartItems.find(
-      (item) => item.product.id === product.id,
-    );
-
-    if (existingItem && existingItem.quantity >= product.stock) {
-      showToast(
-        "info",
-
-        "Stock Limit Reached",
-
-        "You cannot add more than the available stock.",
+  const addToCart = useCallback(
+    async (product: Product) => {
+      if (!isLoggedIn) {
+        navigate("/login");
+        return;
+      }
+      if (product.stock <= 0 || cartBusy.current || checkoutBusy.current) {
+        return;
+      }
+      const existingItem = cartItems.find(
+        (item) => item.product.id === product.id,
       );
-
-      return;
-    }
-
-    cartBusy.current = true;
-
-    setUpdatingId(existingItem?.id ?? -1);
-
-    setAddingToCartId(product.id);
-
-    setCartError("");
-
-    setCheckoutSuccess("");
-
-    try {
-      await addProductToCart(product.id, 1);
-
-      await refreshCart();
-
-      // SUCCESS TOAST
-
-      showToast(
-        "success",
-
-        "Added to Cart!",
-
-        `${product.name} was added to your cart.`,
-      );
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to add product to cart.";
-
-      setCartError(errorMessage);
-
-      // ERROR TOAST
-
-      showToast("error", "Cart Error", errorMessage);
-
-      setWishlistOpen(false);
-
-      setCartOpen(true);
-    } finally {
-      setUpdatingId(null);
-
-      setAddingToCartId(null);
-
-      cartBusy.current = false;
-    }
-  }
-
+      if (existingItem && existingItem.quantity >= product.stock) {
+        showToast(
+          "info",
+          "Stock Limit Reached",
+          "You cannot add more than the available stock.",
+        );
+        return;
+      }
+      cartBusy.current = true;
+      setUpdatingId(existingItem?.id ?? -1);
+      setAddingToCartId(product.id);
+      setCartError("");
+      setCheckoutSuccess("");
+      try {
+        await addCartAsync({
+          productId: product.id,
+          quantity: 1,
+        });
+        showToast(
+          "success",
+          "Added to Cart!",
+          `${product.name} was added to your cart.`,
+        );
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to add product to cart.";
+        setCartError(errorMessage);
+        showToast("error", "Cart Error", errorMessage);
+        setWishlistOpen(false);
+        setCartOpen(true);
+      } finally {
+        setUpdatingId(null);
+        setAddingToCartId(null);
+        cartBusy.current = false;
+      }
+    },
+    [isLoggedIn, navigate, cartItems, addCartMutation],
+  );
   // CHANGE CART QUANTITY
-
   async function changeQuantity(item: CartItem, quantity: number) {
     if (cartBusy.current || checkoutBusy.current) return;
-
     if (quantity < 1 || quantity > item.product.stock) {
       return;
     }
-
     cartBusy.current = true;
-
     setUpdatingId(item.id);
-
     setCartError("");
-
     setCheckoutSuccess("");
-
     try {
-      await updateCartQuantity(item.id, quantity);
-
+      await quantityMutation.mutateAsync({ itemId: item.id, quantity });
       showToast(
         "success",
-
         "Cart Updated",
-
         "Product quantity updated successfully.",
       );
-
-      await refreshCart();
     } catch (err) {
-      setCartError(
-        err instanceof Error ? err.message : "Failed to update quantity.",
-      );
+      const errorMessage =
+        err instanceof TypeError
+          ? "Network error. Please check your internet connection and try again."
+          : err instanceof Error
+            ? err.message
+            : "Failed to update quantity.";
+
+      setCartError(errorMessage);
     } finally {
       setUpdatingId(null);
-
       cartBusy.current = false;
     }
   }
-
   // REMOVE FROM CART
-
-  async function removeFromCart(productId: number) {
+  async function removeFromCart(itemId: number) {
     if (cartBusy.current || checkoutBusy.current) return;
-
-    const item = cartItems.find(
-      (cartItem) => cartItem.product.id === productId,
-    );
-
+    const item = cartItems.find((cartItem) => cartItem.id === itemId);
+    if (!item) return;
     cartBusy.current = true;
-
-    setUpdatingId(item?.id ?? -1);
-
+    setUpdatingId(itemId);
     setCartError("");
-
     setCheckoutSuccess("");
-
     try {
-      await removeProductFromCart(productId);
-
+      await removeCartMutation.mutateAsync(itemId);
       showToast(
-        "info",
-
+        "success",
         "Product Removed",
-
         "Product was removed from your cart.",
       );
-
-      await refreshCart();
     } catch (err) {
-      setCartError(
+      const errorMessage =
         err instanceof Error
           ? err.message
-          : "Failed to remove product from cart.",
-      );
+          : "Failed to remove product from cart.";
+      setCartError(errorMessage);
+      showToast("error", "Cart Error", errorMessage);
     } finally {
       setUpdatingId(null);
-
       cartBusy.current = false;
     }
   }
-
   // CHECKOUT
-
   async function handleCheckout() {
     if (!isLoggedIn) {
       navigate("/login");
-
       return;
     }
-
     if (checkoutBusy.current || cartBusy.current || cartItems.length === 0) {
       return;
     }
-
     checkoutBusy.current = true;
-
     setCheckoutLoading(true);
-
     setCartError("");
-
     setCheckoutSuccess("");
-
     try {
-      const result = await checkout();
-
+      const result = await checkoutMutation.mutateAsync();
       showToast(
         "success",
-
         "Checkout Successful!",
-
         `${result.itemCount} items checked out successfully.`,
       );
-
-      try {
-        await refreshCart();
-      } catch {
-        setCartError(
-          "Checkout succeeded, but the cart could not be refreshed.",
-        );
-      }
     } catch (err) {
       setCartError(
         err instanceof Error
@@ -526,142 +527,104 @@ function HomePage({ isLoggedIn, onLogout }: HomePageProps) {
       );
     } finally {
       setCheckoutLoading(false);
-
       checkoutBusy.current = false;
     }
   }
-
   // TOGGLE FAVORITE
 
-  async function toggleFavorite(product: Product) {
-    if (!isLoggedIn) {
-      navigate("/login");
-
-      return;
-    }
-
-    if (favoriteBusy.current) return;
-
-    const alreadyFavorite = favorites.some((item) => item.id === product.id);
-
-    favoriteBusy.current = true;
-
-    setUpdatingFavoriteId(product.id);
-
-    setWishlistError("");
-
-    try {
-      if (alreadyFavorite) {
-        // REMOVE FROM WISHLIST
-
-        await removeFromFavorites(product.id);
-      } else {
-        // ADD TO WISHLIST
-
-        await addToFavorites(product.id);
+  const toggleFavorite = useCallback(
+    async (product: Product) => {
+      if (!isLoggedIn) {
+        navigate("/login");
+        return;
       }
 
-      await refreshFavorites();
+      if (favoriteBusy.current) return;
 
-      if (alreadyFavorite) {
-        showToast(
-          "info",
+      const alreadyFavorite = favorites.some((item) => item.id === product.id);
 
-          "Removed from Wishlist",
+      favoriteBusy.current = true;
+      setUpdatingFavoriteId(product.id);
+      setWishlistError("");
 
-          `${product.name} was removed from your wishlist.`,
-        );
-      } else {
-        showToast(
-          "success",
+      try {
+        await toggleFavoriteAsync({
+          productId: product.id,
+          remove: alreadyFavorite,
+        });
 
-          "Added to Wishlist!",
+        if (alreadyFavorite) {
+          showToast(
+            "info",
+            "Removed from Wishlist",
+            `${product.name} was removed from your wishlist.`,
+          );
+        } else {
+          showToast(
+            "success",
+            "Added to Wishlist!",
+            `${product.name} was added to your wishlist.`,
+          );
+        }
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to update wishlist.";
 
-          `${product.name} was added to your wishlist.`,
-        );
+        setWishlistError(errorMessage);
+        showToast("error", "Wishlist Error", errorMessage);
+        setCartOpen(false);
+        setWishlistOpen(true);
+      } finally {
+        setUpdatingFavoriteId(null);
+        favoriteBusy.current = false;
       }
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to update wishlist.";
-
-      setWishlistError(errorMessage);
-
-      // ERROR TOAST
-
-      showToast("error", "Wishlist Error", errorMessage);
-
-      setCartOpen(false);
-
-      setWishlistOpen(true);
-    } finally {
-      setUpdatingFavoriteId(null);
-
-      favoriteBusy.current = false;
-    }
-  }
+    },
+    [isLoggedIn, navigate, favorites, toggleFavoriteAsync, showToast],
+  );
 
   // FILTER PRODUCTS
-
   const filteredProducts = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
-
     const selected = categories.find(
       (category) => category.name === selectedCategory,
     );
-
     const minPrice =
       advancedFilters.minPrice.trim() === ""
         ? null
         : Number(advancedFilters.minPrice);
-
     const maxPrice =
       advancedFilters.maxPrice.trim() === ""
         ? null
         : Number(advancedFilters.maxPrice);
-
     const result = products.filter((product) => {
       // SEARCH
-
       const matchesSearch = [product.name, product.brand, product.model].some(
         (value) =>
           String(value ?? "")
             .toLowerCase()
-
             .includes(query),
       );
-
       // CATEGORY
-
       const matchesCategory =
         selectedCategory === "All" ||
         product.category?.name?.trim().toLowerCase() ===
           selectedCategory.trim().toLowerCase() ||
         (selected !== undefined && product.category?.id === selected.id);
-
       // BRAND
-
       const matchesBrand =
         advancedFilters.brand === "All" ||
         product.brand === advancedFilters.brand;
-
       // PRICE
-
       const matchesMinPrice =
         minPrice === null ||
         (!Number.isNaN(minPrice) && product.price >= minPrice);
-
       const matchesMaxPrice =
         maxPrice === null ||
         (!Number.isNaN(maxPrice) && product.price <= maxPrice);
-
       // RATING
-
       const matchesRating = product.rating >= advancedFilters.minRating;
-
       // STOCK
-
       const matchesStock = !advancedFilters.inStockOnly || product.stock > 0;
-
       return (
         matchesSearch &&
         matchesCategory &&
@@ -672,45 +635,37 @@ function HomePage({ isLoggedIn, onLogout }: HomePageProps) {
         matchesStock
       );
     });
-
     // SORTING
-
     switch (advancedFilters.sortBy) {
       case "price-asc":
         return result.sort((a, b) => a.price - b.price);
-
       case "price-desc":
         return result.sort((a, b) => b.price - a.price);
-
       case "rating-desc":
         return result.sort((a, b) => b.rating - a.rating);
-
       case "name-asc":
         return result.sort((a, b) => a.name.localeCompare(b.name));
-
       default:
         return result;
     }
   }, [products, categories, searchQuery, selectedCategory, advancedFilters]);
-
+  // VISIBLE PRODUCTS
   const visibleProducts = useMemo(() => {
     return filteredProducts.slice(0, visibleCount);
   }, [filteredProducts, visibleCount]);
-
   const hasMoreProducts = visibleCount < filteredProducts.length;
-
   function handleShowMore() {
     setVisibleCount((prev) => prev + 12);
   }
-
   useEffect(() => {
     setVisibleCount(12);
   }, [searchQuery, selectedCategory, advancedFilters]);
-
+  // HEADER COUNTERS
   const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
-
-  const favoriteIds = favorites.map((product) => product.id);
-
+  const favoriteIds = useMemo(
+    () => favorites.map((product) => product.id),
+    [favorites],
+  );
   return (
     <div className="min-h-screen w-full min-w-0 bg-[#090d16] text-white">
       <Header
@@ -724,15 +679,15 @@ function HomePage({ isLoggedIn, onLogout }: HomePageProps) {
         onWishlistClick={openWishlist}
       />
 
+      
+
       <main className="w-full min-w-0">
         <Hero onViewAllProducts={handleViewAllProducts} />
-
         <Categories
           categories={categories}
           selectedCategory={selectedCategory}
           onSelectCategory={setSelectedCategory}
         />
-
         {!loading && !error && (
           <AdvancedProductFilters
             products={products}
@@ -741,13 +696,12 @@ function HomePage({ isLoggedIn, onLogout }: HomePageProps) {
             resultCount={filteredProducts.length}
           />
         )}
-
         {loading ? (
           <ProductSkeletonGrid />
         ) : error ? (
           <p className="py-16 text-center text-red-400">{error}</p>
         ) : (
-          <div id="products">
+          <div id="products" className="scroll-mt-24">
             <ProductGrid
               products={visibleProducts}
               onAddToCart={addToCart}
@@ -755,7 +709,6 @@ function HomePage({ isLoggedIn, onLogout }: HomePageProps) {
               onToggleFavorite={toggleFavorite}
               updatingFavoriteId={updatingFavoriteId}
             />
-
             {filteredProducts.length > 0 && (
               <div className="flex flex-col items-center gap-4 px-4 pb-14 pt-6">
                 <p className="text-sm text-gray-400">
@@ -769,7 +722,6 @@ function HomePage({ isLoggedIn, onLogout }: HomePageProps) {
                   </span>{" "}
                   products
                 </p>
-
                 {hasMoreProducts && (
                   <button
                     type="button"
@@ -779,20 +731,19 @@ function HomePage({ isLoggedIn, onLogout }: HomePageProps) {
                     Show More ↓
                   </button>
                 )}
+                
               </div>
             )}
           </div>
         )}
       </main>
-
       <Footer />
-
       <CartSidebar
         isOpen={cartOpen}
         onClose={() => setCartOpen(false)}
         items={cartItems}
         loading={cartLoading}
-        error={cartError}
+        error={cartError || cartLoadError}
         updatingId={updatingId}
         onIncrease={(item) => changeQuantity(item, item.quantity + 1)}
         onDecrease={(item) => changeQuantity(item, item.quantity - 1)}
@@ -800,25 +751,53 @@ function HomePage({ isLoggedIn, onLogout }: HomePageProps) {
         onCheckout={handleCheckout}
         checkoutLoading={checkoutLoading}
         checkoutSuccess={checkoutSuccess}
+        onClearAll={() => setConfirmClear("cart")}
+        clearingAll={clearingCart}
       />
-
       <WishlistSidebar
         isOpen={wishlistOpen}
         onClose={() => setWishlistOpen(false)}
         products={favorites}
         loading={wishlistLoading}
-        error={wishlistError}
+        error={wishlistError || wishlistLoadError}
         updatingFavoriteId={updatingFavoriteId}
         addingToCartId={addingToCartId}
         onRemove={toggleFavorite}
         onAddToCart={addToCart}
+        onClearAll={() => setConfirmClear("wishlist")}
+        clearingAll={clearingWishlist}
       />
-
+      <ConfirmModal
+        isOpen={confirmClear !== null}
+        loading={clearingCart || clearingWishlist}
+        onClose={() => setConfirmClear(null)}
+        onConfirm={() => {
+          if (clearingCart || clearingWishlist) return;
+          if (confirmClear === "cart") {
+            void clearCart().finally(() => {
+              setConfirmClear(null);
+            });
+          } else if (confirmClear === "wishlist") {
+            void clearWishlist().finally(() => {
+              setConfirmClear(null);
+            });
+          }
+        }}
+        title={
+          confirmClear === "cart" ? "Clear Shopping Cart?" : "Clear Wishlist?"
+        }
+        message={
+          confirmClear === "cart"
+            ? `Are you sure you want to remove all ${cartItems.length} cart products? This action cannot be undone.`
+            : `Are you sure you want to remove all ${favorites.length} favorite products? This action cannot be undone.`
+        }
+        confirmText="Yes, Clear All"
+      />
       <Toast toast={toast} onClose={closeToast} />
     </div>
   );
 }
-
+// ROUTE LOADING
 function RouteLoading() {
   return (
     <div
@@ -832,92 +811,71 @@ function RouteLoading() {
     </div>
   );
 }
-
+// MAIN APP
 export default function App() {
+  const queryClient = useQueryClient();
   const [isLoggedIn, setIsLoggedIn] = useState(() => isAuthenticated());
-
-  function handleLogin() {
+  const handleLogin = useCallback(() => {
+    // Clear data cached under the previous session.
+    queryClient.clear();
     setIsLoggedIn(true);
-  }
-
-  function handleLogout() {
+  }, [queryClient]);
+  const handleLogout = useCallback(() => {
     logout();
-
     setIsLoggedIn(false);
-  }
-
+    // Clear all cached queries and mutations, including private user data.
+    queryClient.clear();
+  }, [queryClient]);
+  useEffect(() => {
+    function handleUnauthorized() {
+      handleLogout();
+    }
+    window.addEventListener("auth:unauthorized", handleUnauthorized);
+    return () => {
+      window.removeEventListener("auth:unauthorized", handleUnauthorized);
+    };
+  }, [handleLogout]);
   return (
     <CompareProvider>
       <Suspense fallback={<RouteLoading />}>
         <Routes>
+          {/* HOME */}
           <Route
             path="/"
             element={
               <HomePage isLoggedIn={isLoggedIn} onLogout={handleLogout} />
             }
           />
-
           {/* ADMIN AUTH */}
-
           <Route path="/admin/login" element={<AdminLogin />} />
-
           <Route path="/admin/register" element={<AdminRegister />} />
-
           {/* PROTECTED ADMIN ROUTES */}
-
           <Route element={<ProtectedAdminRoute />}>
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
-
             <Route path="/admin/products" element={<AdminProducts />} />
-
             <Route path="/admin/categories" element={<AdminCategories />} />
-
             <Route path="/admin/inventory" element={<AdminInventory />} />
           </Route>
-
           {/* STORE */}
-
           <Route path="/products/:id" element={<ProductDetails />} />
-
           <Route path="/compare" element={<CompareProducts />} />
-
           {/* AUTH */}
-
           <Route path="/login" element={<Login onLogin={handleLogin} />} />
-
           <Route path="/register" element={<Register />} />
-
           <Route path="/verify-email" element={<VerifyEmail />} />
-
-          {/* PROFILE */}
-
-          <Route
-            path="/profile"
-            element={
-              isLoggedIn ? (
-                <Profile onLogout={handleLogout} />
-              ) : (
-                <Navigate to="/login" replace />
-              )
-            }
-          />
-
-          <Route
-            path="/change-password"
-            element={
-              isLoggedIn ? <ChangePassword /> : <Navigate to="/login" replace />
-            }
-          />
-
+          {/* PROTECTED USER ROUTES */}
+          <Route element={<ProtectedRoute isLoggedIn={isLoggedIn} />}>
+            <Route
+              path="/profile"
+              element={<Profile onLogout={handleLogout} />}
+            />
+            <Route path="/change-password" element={<ChangePassword />} />
+          </Route>
           {/* PASSWORD RECOVERY */}
-
           <Route path="/forgot-password" element={<ForgotPassword />} />
-
           <Route path="/reset-password" element={<ResetPassword />} />
-
           {/* NOT FOUND */}
-
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
     </CompareProvider>

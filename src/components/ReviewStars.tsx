@@ -1,4 +1,3 @@
-
 type ReviewStarsProps = {
   rating: number;
   onChange?: (rating: number) => void;
@@ -13,7 +12,7 @@ export default function ReviewStars({
   const interactive = Boolean(onChange);
 
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex max-w-full flex-wrap items-center gap-1">
       {[1, 2, 3, 4, 5].map((star) => (
         <button
           key={star}
@@ -23,15 +22,9 @@ export default function ReviewStars({
           aria-label={`Rate ${star} stars`}
           aria-pressed={interactive ? rating === star : undefined}
           className={`transition ${
-            interactive
-              ? "cursor-pointer hover:scale-110"
-              : "cursor-default"
-          } ${
-            size === "lg" ? "text-3xl" : "text-lg"
-          } ${
-            star <= rating
-              ? "text-amber-400"
-              : "text-gray-600"
+            interactive ? "cursor-pointer hover:scale-110" : "cursor-default"
+          } ${size === "lg" ? "text-3xl" : "text-lg"} ${
+            star <= rating ? "text-amber-400" : "text-gray-600"
           }`}
         >
           ★

@@ -1,4 +1,3 @@
-
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 
 type LoadingButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {

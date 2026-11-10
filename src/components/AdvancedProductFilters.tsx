@@ -91,11 +91,10 @@ export default function AdvancedProductFilters({
             Reset Filters
           </button>
         </div>
-
-        {/* FILTERS GRID */}
-        <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+        1{/* FILTERS GRID */}
+        <div className="grid min-w-0 grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-5">
           {/* BRAND */}
-          <div className="min-w-0">
+          <div className="col-span-2 min-w-0 sm:col-span-1">
             <label
               htmlFor="filter-brand"
               className="mb-2 block text-sm font-medium text-gray-300"
@@ -186,7 +185,7 @@ export default function AdvancedProductFilters({
           </div>
 
           {/* SORT */}
-          <div className="min-w-0">
+          <div className="col-span-2 min-w-0 sm:col-span-1">
             <label
               htmlFor="filter-sort"
               className="mb-2 block text-sm font-medium text-gray-300"
@@ -208,7 +207,6 @@ export default function AdvancedProductFilters({
             </select>
           </div>
         </div>
-
         {/* BOTTOM BAR */}
         <div className="mt-6 flex min-w-0 flex-col gap-4 border-t border-white/10 pt-5 sm:flex-row sm:items-center sm:justify-between">
           <label className="flex cursor-pointer items-center gap-3">

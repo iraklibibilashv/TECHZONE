@@ -100,8 +100,9 @@ export default function Footer() {
       </div>
 
       {/* COPYRIGHT */}
+
       <div className="border-t border-white/10">
-        <div className="mx-auto flex w-full min-w-0 max-w-7xl flex-col items-center justify-between gap-3 px-4 py-5 text-center text-xs text-gray-500 sm:flex-row sm:px-6 sm:text-left">
+        <div className="mx-auto flex w-full min-w-0 max-w-7xl flex-col items-center justify-between gap-3 px-4 py-5 text-center text-xs text-gray-400 sm:flex-row sm:px-6 sm:text-left">
           <p className="break-words">© 2026 TECHZONE. All rights reserved.</p>
 
           <p className="break-words">Built for technology enthusiasts.</p>

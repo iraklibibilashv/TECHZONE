@@ -1,8 +1,14 @@
 import type { Product } from "../types/product";
+
 import type { Category } from "../types/category";
+
 import type { CartResponse } from "../types/cart";
+
 import { getAccessToken } from "./auth";
+
 import type { User, UpdateUserData, ChangePasswordData } from "../types/user";
+
+import { handleApiError } from "../lib/apiError";
 
 import type {
   ReviewsResponse,
@@ -11,13 +17,45 @@ import type {
 } from "../types/review";
 
 const API_URL = import.meta.env.VITE_API_URL;
+
 const API_KEY = import.meta.env.VITE_API_KEY;
 
 const headers = {
   Accept: "application/json",
+
   "Content-Type": "application/json",
+
   "X-STEP-KEY": API_KEY,
 };
+
+export async function apiFetch(
+  url: string,
+  options: RequestInit = {},
+): Promise<Response> {
+  let response: Response;
+
+  try {
+    response = await fetch(url, options);
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw error;
+    }
+
+    throw new Error("Network error. Please check your internet connection.");
+  }
+
+  const requestHeaders = new Headers(options.headers);
+
+  if (response.status === 401 && requestHeaders.has("Authorization")) {
+    window.dispatchEvent(new Event("auth:unauthorized"));
+  }
+
+  if (!response.ok) {
+    await handleApiError(response);
+  }
+
+  return response;
+}
 
 type ProductsResponse = {
   data: {
@@ -31,29 +69,36 @@ type CategoriesResponse = {
 
 export interface RegisterData {
   firstName: string;
+
   lastName: string;
+
   email: string;
+
   password: string;
 }
 
 export interface LoginData {
   email: string;
+
   password: string;
 }
 
 export interface AuthResponse {
   data: {
     accessToken: string;
+
     refreshToken: string;
   };
 }
 
 export interface VerifyEmailData {
   email: string;
+
   code: string;
 }
 
 // PRODUCTS
+
 export async function getProducts(): Promise<Product[]> {
   const response = await fetch(`${API_URL}/products?Take=50`, {
     headers,
@@ -67,11 +112,13 @@ export async function getProducts(): Promise<Product[]> {
 
   return result.data.items.map((product) => ({
     ...product,
+
     stock: Number(product.stock),
   }));
 }
 
 // CATEGORIES
+
 export async function getCategories(): Promise<Category[]> {
   const response = await fetch(`${API_URL}/categories`, {
     headers,
@@ -87,10 +134,13 @@ export async function getCategories(): Promise<Category[]> {
 }
 
 // REGISTER
+
 export async function registerUser(userData: RegisterData): Promise<unknown> {
   const response = await fetch(`${API_URL}/auth/register`, {
     method: "POST",
+
     headers,
+
     body: JSON.stringify(userData),
   });
 
@@ -104,10 +154,13 @@ export async function registerUser(userData: RegisterData): Promise<unknown> {
 }
 
 // LOGIN
+
 export async function loginUser(credentials: LoginData): Promise<AuthResponse> {
   const response = await fetch(`${API_URL}/auth/login`, {
     method: "POST",
+
     headers,
+
     body: JSON.stringify(credentials),
   });
 
@@ -123,12 +176,15 @@ export async function loginUser(credentials: LoginData): Promise<AuthResponse> {
 }
 
 // VERIFY EMAIL
+
 export async function verifyEmail(
   verificationData: VerifyEmailData,
 ): Promise<void> {
   const response = await fetch(`${API_URL}/auth/verify-email`, {
     method: "PUT",
+
     headers,
+
     body: JSON.stringify(verificationData),
   });
 
@@ -144,11 +200,14 @@ export async function verifyEmail(
 }
 
 // RESEND VERIFICATION CODE
+
 export async function resendVerificationCode(email: string): Promise<void> {
   const response = await fetch(
     `${API_URL}/auth/resend-email-verification/${encodeURIComponent(email)}`,
+
     {
       method: "POST",
+
       headers,
     },
   );
@@ -165,6 +224,7 @@ export async function resendVerificationCode(email: string): Promise<void> {
 }
 
 // CART AUTH HEADERS
+
 function getCartHeaders() {
   const token = getAccessToken();
 
@@ -174,14 +234,17 @@ function getCartHeaders() {
 
   return {
     ...headers,
+
     Authorization: `Bearer ${token}`,
   };
 }
 
 // GET CART
+
 export async function getCart(): Promise<CartResponse> {
-  const response = await fetch(`${API_URL}/cart?Take=50`, {
+  const response = await apiFetch(`${API_URL}/cart?Take=50`, {
     method: "GET",
+
     headers: getCartHeaders(),
   });
 
@@ -193,15 +256,20 @@ export async function getCart(): Promise<CartResponse> {
 }
 
 // ADD TO CART
+
 export async function addProductToCart(
   productId: number,
+
   quantity: number = 1,
 ): Promise<void> {
-  const response = await fetch(`${API_URL}/cart/add-to-cart`, {
+  const response = await apiFetch(`${API_URL}/cart/add-to-cart`, {
     method: "POST",
+
     headers: getCartHeaders(),
+
     body: JSON.stringify({
       productId,
+
       quantity,
     }),
   });
@@ -212,15 +280,20 @@ export async function addProductToCart(
 }
 
 // UPDATE CART QUANTITY
+
 export async function updateCartQuantity(
   itemId: number,
+
   quantity: number,
 ): Promise<void> {
-  const response = await fetch(`${API_URL}/cart/edit-quantity`, {
+  const response = await apiFetch(`${API_URL}/cart/edit-quantity`, {
     method: "PUT",
+
     headers: getCartHeaders(),
+
     body: JSON.stringify({
       itemId,
+
       quantity,
     }),
   });
@@ -231,35 +304,47 @@ export async function updateCartQuantity(
 }
 
 // REMOVE FROM CART
+
 export async function removeProductFromCart(productId: number): Promise<void> {
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_URL}/cart/remove-from-cart/${productId}`,
+
     {
       method: "DELETE",
+
       headers: getCartHeaders(),
     },
   );
 
   if (!response.ok) {
-    throw new Error("Failed to remove product from cart.");
+    const details = await response.text();
+
+    throw new Error(`Cart DELETE failed (${response.status}): ${details}`);
   }
 }
 
 type FavoritesResponse = {
   data: {
     items: Product[];
+
     currentPage: number;
+
     totalPages: number;
+
     totalCount: number;
+
     pageSize: number;
+
     hasMore: boolean;
   };
 };
 
 // GET FAVORITES
+
 export async function getFavorites(): Promise<Product[]> {
-  const response = await fetch(`${API_URL}/favorites?Take=50`, {
+  const response = await apiFetch(`${API_URL}/favorites?Take=50`, {
     method: "GET",
+
     headers: getCartHeaders(),
   });
 
@@ -273,9 +358,11 @@ export async function getFavorites(): Promise<Product[]> {
 }
 
 // ADD TO FAVORITES
+
 export async function addToFavorites(productId: number): Promise<void> {
-  const response = await fetch(`${API_URL}/favorites/${productId}`, {
+  const response = await apiFetch(`${API_URL}/favorites/${productId}`, {
     method: "POST",
+
     headers: getCartHeaders(),
   });
 
@@ -285,20 +372,25 @@ export async function addToFavorites(productId: number): Promise<void> {
 }
 
 // REMOVE FROM FAVORITES
+
 export async function removeFromFavorites(productId: number): Promise<void> {
-  const response = await fetch(`${API_URL}/favorites/${productId}`, {
+  const response = await apiFetch(`${API_URL}/favorites/${productId}`, {
     method: "DELETE",
+
     headers: getCartHeaders(),
   });
 
   if (!response.ok) {
-    throw new Error("Failed to remove product from favorites.");
+    const details = await response.text();
+
+    throw new Error(`Wishlist DELETE failed (${response.status}): ${details}`);
   }
 }
 
 export async function getCurrentUser(): Promise<User> {
-  const response = await fetch(`${API_URL}/users/me`, {
+  const response = await apiFetch(`${API_URL}/users/me`, {
     method: "GET",
+
     headers: getCartHeaders(),
   });
 
@@ -314,9 +406,11 @@ export async function getCurrentUser(): Promise<User> {
 export async function updateUserProfile(
   userData: UpdateUserData,
 ): Promise<void> {
-  const response = await fetch(`${API_URL}/users`, {
+  const response = await apiFetch(`${API_URL}/users`, {
     method: "PUT",
+
     headers: getCartHeaders(),
+
     body: JSON.stringify(userData),
   });
 
@@ -326,8 +420,9 @@ export async function updateUserProfile(
 }
 
 export async function deleteUserProfile(): Promise<void> {
-  const response = await fetch(`${API_URL}/users/delete-profile`, {
+  const response = await apiFetch(`${API_URL}/users/delete-profile`, {
     method: "DELETE",
+
     headers: getCartHeaders(),
   });
 
@@ -339,9 +434,11 @@ export async function deleteUserProfile(): Promise<void> {
 export async function changePassword(
   passwordData: ChangePasswordData,
 ): Promise<void> {
-  const response = await fetch(`${API_URL}/users/change-password`, {
+  const response = await apiFetch(`${API_URL}/users/change-password`, {
     method: "PUT",
+
     headers: getCartHeaders(),
+
     body: JSON.stringify(passwordData),
   });
 
@@ -353,8 +450,10 @@ export async function changePassword(
 export async function forgotPassword(email: string): Promise<void> {
   const response = await fetch(
     `${API_URL}/auth/forget-password/${encodeURIComponent(email)}`,
+
     {
       method: "POST",
+
       headers,
     },
   );
@@ -369,21 +468,28 @@ export async function forgotPassword(email: string): Promise<void> {
     );
   }
 }
+
 export interface ResetPasswordData {
   token: string;
+
   password: string;
 }
 
 export async function resetPassword(data: ResetPasswordData): Promise<void> {
   const response = await fetch(
     `${import.meta.env.VITE_API_URL}/auth/reset-password`,
+
     {
       method: "PUT",
+
       headers: {
         "Content-Type": "application/json",
+
         Accept: "application/json",
+
         "X-STEP-KEY": import.meta.env.VITE_API_KEY,
       },
+
       body: JSON.stringify(data),
     },
   );
@@ -397,12 +503,14 @@ export async function resetPassword(data: ResetPasswordData): Promise<void> {
 
 export interface CheckoutResponse {
   message: string;
+
   itemCount: number;
 }
 
 export async function checkout(): Promise<CheckoutResponse> {
-  const response = await fetch(`${API_URL}/users/checkout`, {
+  const response = await apiFetch(`${API_URL}/users/checkout`, {
     method: "POST",
+
     headers: getCartHeaders(),
   });
 
@@ -417,13 +525,17 @@ export async function checkout(): Promise<CheckoutResponse> {
 
 export async function getProductReviews(
   productId: number,
+
   take = 10,
+
   page = 1,
 ): Promise<ReviewsResponse> {
   const response = await fetch(
     `${API_URL}/reviews/${productId}?Take=${take}&Page=${page}`,
+
     {
       method: "GET",
+
       headers,
     },
   );
@@ -438,9 +550,11 @@ export async function getProductReviews(
 }
 
 export async function addReview(data: CreateReviewRequest): Promise<void> {
-  const response = await fetch(`${API_URL}/reviews`, {
+  const response = await apiFetch(`${API_URL}/reviews`, {
     method: "POST",
+
     headers: getCartHeaders(),
+
     body: JSON.stringify(data),
   });
 
@@ -452,9 +566,11 @@ export async function addReview(data: CreateReviewRequest): Promise<void> {
 }
 
 export async function updateReview(data: UpdateReviewRequest): Promise<void> {
-  const response = await fetch(`${API_URL}/reviews`, {
+  const response = await apiFetch(`${API_URL}/reviews`, {
     method: "PUT",
+
     headers: getCartHeaders(),
+
     body: JSON.stringify(data),
   });
 
@@ -466,8 +582,9 @@ export async function updateReview(data: UpdateReviewRequest): Promise<void> {
 }
 
 export async function deleteReview(reviewId: number): Promise<void> {
-  const response = await fetch(`${API_URL}/reviews/${reviewId}`, {
+  const response = await apiFetch(`${API_URL}/reviews/${reviewId}`, {
     method: "DELETE",
+
     headers: getCartHeaders(),
   });
 
@@ -483,9 +600,11 @@ export async function deleteReview(reviewId: number): Promise<void> {
 export async function getProductById(id: number): Promise<Product> {
   const response = await fetch(
     `${import.meta.env.VITE_API_URL}/products/${id}`,
+
     {
       headers: {
         Accept: "application/json",
+
         "X-STEP-KEY": import.meta.env.VITE_API_KEY,
       },
     },

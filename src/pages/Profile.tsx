@@ -157,7 +157,7 @@ export default function Profile({ onLogout }: ProfileProps) {
   }
 
   return (
-    <div className="min-h-screen w-full min-w-0 bg-[#090d16] px-3 py-6 text-white sm:px-4 sm:py-12">
+    <div className="min-h-[100dvh] w-full min-w-0 bg-[#090d16] px-3 py-6 text-white sm:px-4 sm:py-12">
       <div className="mx-auto w-full min-w-0 max-w-3xl">
         <Link to="/" className="mb-8 block text-3xl font-black">
           TECH<span className="text-blue-500">ZONE</span>
@@ -177,7 +177,7 @@ export default function Profile({ onLogout }: ProfileProps) {
               )}
             </div>
 
-            <div>
+            <div className="min-w-0">
               <h1 className="text-2xl font-bold sm:text-3xl">My Profile</h1>
 
               <p className="mt-2 text-sm text-gray-400">
@@ -250,7 +250,7 @@ export default function Profile({ onLogout }: ProfileProps) {
                         field === "lastName" ||
                         field === "email"
                       }
-                      className="block w-full min-w-0 max-w-full rounded-xl border border-white/10 bg-[#090d16] px-3 py-3 text-sm text-white outline-none transition placeholder:text-gray-600 focus:border-blue-500 disabled:cursor-default disabled:opacity-70 sm:px-4 sm:py-3.5 sm:text-base"
+                      className="block w-full min-w-0 max-w-full rounded-xl border border-white/10 bg-[#090d16] px-3 py-3 text-base text-white outline-none transition placeholder:text-gray-600 focus:border-blue-500 disabled:cursor-default disabled:opacity-70 sm:px-4 sm:py-3.5"
                     />
                   </div>
                 ))}
@@ -317,7 +317,7 @@ export default function Profile({ onLogout }: ProfileProps) {
               type="button"
               onClick={handleDelete}
               disabled={deleting}
-              className="mt-4 rounded-xl border border-red-500/30 px-5 py-3 text-sm font-semibold text-red-400 transition hover:bg-red-500/10 disabled:opacity-50"
+              className="mt-4 w-full rounded-xl border border-red-500/30 px-5 py-3 text-sm font-semibold text-red-400 transition hover:bg-red-500/10 disabled:opacity-50 sm:w-auto"
             >
               {deleting ? "Deleting..." : "Delete Account"}
             </button>

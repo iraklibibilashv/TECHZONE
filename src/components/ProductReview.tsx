@@ -343,7 +343,7 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
 
                 {/* EDIT AND DELETE */}
                 {isOwner && (
-                  <div className="mt-5 flex flex-wrap items-center gap-4 border-t border-white/10 pt-4">
+                  <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-white/10 pt-4 sm:gap-4">
                     <button
                       type="button"
                       disabled={submitting}
@@ -371,7 +371,7 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
 
       {/* PAGINATION */}
       {totalPages > 1 && (
-        <div className="mt-8 flex min-w-0 flex-wrap items-center justify-center gap-2 sm:gap-4">
+        <div className="mt-8 flex min-w-0 flex-wrap items-center justify-center gap-2 px-1 sm:gap-4">
           <button
             type="button"
             disabled={page === 1 || loading || submitting}

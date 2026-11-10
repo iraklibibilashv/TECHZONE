@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -38,23 +37,18 @@ export default function AdminLogin() {
         password,
       })) as AdminLoginResponse;
 
-      const accessToken =
-        result.data?.accessToken ?? result.accessToken;
+      const accessToken = result.data?.accessToken ?? result.accessToken;
 
       if (!accessToken) {
         throw new Error(
-          "Login succeeded, but the access token was not found in the response."
+          "Login succeeded, but the access token was not found in the response.",
         );
       }
 
       saveAdminToken(accessToken);
       navigate("/admin/dashboard", { replace: true });
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Admin login failed."
-      );
+      setError(err instanceof Error ? err.message : "Admin login failed.");
     } finally {
       setLoading(false);
     }
@@ -64,10 +58,7 @@ export default function AdminLogin() {
     <div className="flex min-h-screen items-center justify-center bg-[#090d16] px-4 py-10 text-white">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <Link
-            to="/"
-            className="text-3xl font-black tracking-tight"
-          >
+          <Link to="/" className="text-3xl font-black tracking-tight">
             TECH<span className="text-blue-500">ZONE</span>
           </Link>
 
@@ -75,9 +66,7 @@ export default function AdminLogin() {
             Admin Portal
           </div>
 
-          <h1 className="mt-6 text-3xl font-black">
-            Admin Sign In
-          </h1>
+          <h1 className="mt-6 text-3xl font-black">Admin Sign In</h1>
 
           <p className="mt-3 text-sm text-gray-400">
             Sign in to manage your TECHZONE store.

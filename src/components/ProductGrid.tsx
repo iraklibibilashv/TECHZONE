@@ -1,6 +1,6 @@
-
 import ProductCard from "./ProductCard";
 import type { Product } from "../types/product";
+import { useMemo } from "react";
 
 type ProductGridProps = {
   products: Product[];
@@ -17,11 +17,10 @@ export default function ProductGrid({
   onToggleFavorite,
   updatingFavoriteId,
 }: ProductGridProps) {
+  const favoriteIdSet = useMemo(() => new Set(favoriteIds), [favoriteIds]);
+
   return (
-    <section
-      id="products"
-      className="mx-auto w-full min-w-0 max-w-7xl px-4 py-10 sm:px-6 sm:py-12 lg:py-16"
-    >
+    <section className="mx-auto w-full min-w-0 max-w-7xl px-4 py-10 sm:px-6 sm:py-12 lg:py-16">
       {/* SECTION HEADER */}
       <div className="mb-7 flex min-w-0 flex-col gap-4 sm:mb-8 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
@@ -33,7 +32,7 @@ export default function ProductGrid({
             Popular Products
           </h2>
 
-          <p className="mt-3 text-sm text-gray-500">
+          <p className="mt-3 text-sm text-gray-400">
             Discover the right technology for you.
           </p>
         </div>
@@ -49,11 +48,11 @@ export default function ProductGrid({
       {/* PRODUCT GRID */}
       <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-6 xl:grid-cols-4">
         {products.map((product) => (
-          <div key={product.id} className="min-w-0">
+          <div key={product.id} className="h-full min-w-0">
             <ProductCard
               product={product}
               onAddToCart={onAddToCart}
-              isFavorite={favoriteIds.includes(product.id)}
+              isFavorite={favoriteIdSet.has(product.id)}
               onToggleFavorite={onToggleFavorite}
               favoriteLoading={updatingFavoriteId === product.id}
             />
@@ -66,9 +65,7 @@ export default function ProductGrid({
         <div className="rounded-2xl border border-dashed border-white/10 px-4 py-12 text-center sm:py-16">
           <p className="text-4xl">📦</p>
 
-          <p className="mt-4 font-semibold text-white">
-            No Products Found
-          </p>
+          <p className="mt-4 font-semibold text-white">No Products Found</p>
 
           <p className="mt-2 text-sm text-gray-500">
             No products match your current filters.

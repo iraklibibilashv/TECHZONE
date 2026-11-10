@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import type { Product } from "../types/product";
 import { useCompare } from "../context/CompareContext";
+import { memo } from "react";
 
 type ProductCardProps = {
   product: Product;
@@ -10,7 +11,7 @@ type ProductCardProps = {
   favoriteLoading: boolean;
 };
 
-export default function ProductCard({
+function ProductCard({
   product,
   onAddToCart,
   isFavorite,
@@ -81,13 +82,13 @@ export default function ProductCard({
 
         {/* PRODUCT NAME */}
         <Link to={detailsUrl} className="mt-2 block min-w-0">
-          <h3 className="line-clamp-2 min-h-[3.5rem] break-words text-lg font-bold text-white transition hover:text-blue-400 sm:line-clamp-1 sm:min-h-0">
+          <h3 className="line-clamp-2 min-h-14 break-words text-base font-bold leading-7 text-white transition hover:text-blue-400 sm:text-lg">
             {product.name}
           </h3>
         </Link>
 
         {/* MODEL */}
-        <p className="mt-1 truncate text-sm text-gray-500">{product.model}</p>
+        <p className="mt-1 truncate text-sm text-gray-400">{product.model}</p>
 
         {/* RATING AND STOCK */}
         <div className="mt-4 flex min-w-0 flex-wrap items-center justify-between gap-2">
@@ -120,7 +121,7 @@ export default function ProductCard({
                 ? "Remove from comparison"
                 : "Add to comparison"
           }
-          className={`mt-5 flex w-full min-w-0 items-center justify-center gap-2 rounded-xl border px-3 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-40 sm:px-4 ${
+          className={`mt-5 mb-4 flex w-full min-w-0 items-center justify-center gap-2 rounded-xl border px-3 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-40 sm:px-4 ${
             compared
               ? "border-blue-500 bg-blue-500/20 text-blue-400"
               : "border-white/10 bg-white/5 text-gray-300 hover:border-blue-500 hover:bg-blue-500/10 hover:text-white"
@@ -131,8 +132,8 @@ export default function ProductCard({
         </button>
 
         {/* PRICE AND CART */}
-        <div className="mt-auto flex min-w-0 flex-col gap-3 border-t border-white/10 pt-4 sm:mt-5 sm:flex-row sm:items-center sm:justify-between">
-          <p className="min-w-0 break-words text-2xl font-black text-white">
+        <div className="mt-auto flex min-w-0 flex-col gap-3 border-t border-white/10 pt-4">
+          <p className="min-w-0 break-words text-xl font-black text-white sm:text-2xl">
             ₾{product.price.toLocaleString("en-US")}
           </p>
 
@@ -140,7 +141,7 @@ export default function ProductCard({
             type="button"
             disabled={product.stock <= 0}
             onClick={() => onAddToCart(product)}
-            className="w-full shrink-0 rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:bg-gray-700 sm:w-auto"
+            className="w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:bg-gray-700"
           >
             🛒 Add to Cart
           </button>
@@ -149,3 +150,5 @@ export default function ProductCard({
     </article>
   );
 }
+
+export default memo(ProductCard);

@@ -12,6 +12,8 @@ type CartSidebarProps = {
   onIncrease: (item: CartItem) => void;
   onDecrease: (item: CartItem) => void;
   onRemove: (productId: number) => void;
+  onClearAll: () => void;
+  clearingAll: boolean;
   onCheckout: () => void;
   checkoutLoading: boolean;
   checkoutSuccess: string;
@@ -32,6 +34,8 @@ export default function CartSidebar({
   onIncrease,
   onDecrease,
   onRemove,
+  onClearAll,
+  clearingAll,
   onCheckout,
   checkoutLoading,
   checkoutSuccess,
@@ -40,96 +44,71 @@ export default function CartSidebar({
 
   useEffect(() => {
     if (!isOpen) return;
-
     function handleEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        onClose();
-      }
+      if (event.key === "Escape") onClose();
     }
-
     window.addEventListener("keydown", handleEscape);
-
-    return () => {
-      window.removeEventListener("keydown", handleEscape);
-    };
+    return () => window.removeEventListener("keydown", handleEscape);
   }, [isOpen, onClose]);
 
   useEffect(() => {
-    if (updatingId === null) {
-      setAction(null);
-    }
+    if (updatingId === null) setAction(null);
   }, [updatingId]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isOpen]);
+
   const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0);
-
   const totalPrice = items.reduce((sum, item) => sum + item.totalPrice, 0);
-
-  const isBusy = updatingId !== null || checkoutLoading;
+  const isBusy = updatingId !== null || checkoutLoading || clearingAll;
 
   function handleIncrease(item: CartItem) {
-    if (isBusy || item.quantity >= item.product.stock) {
-      return;
-    }
-
-    setAction({
-      id: item.id,
-      type: "increase",
-    });
-
+    if (isBusy || item.quantity >= item.product.stock) return;
+    setAction({ id: item.id, type: "increase" });
     onIncrease(item);
   }
-
   function handleDecrease(item: CartItem) {
     if (isBusy || item.quantity <= 1) return;
-
-    setAction({
-      id: item.id,
-      type: "decrease",
-    });
-
+    setAction({ id: item.id, type: "decrease" });
     onDecrease(item);
   }
-
   function handleRemove(item: CartItem) {
     if (isBusy) return;
-
-    setAction({
-      id: item.id,
-      type: "remove",
-    });
-
-    onRemove(item.product.id);
+    setAction({ id: item.id, type: "remove" });
+    onRemove(item.id);
   }
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-[100] overflow-hidden">
-      {/* OVERLAY */}
       <button
         type="button"
         aria-label="Close cart"
         onClick={onClose}
         className="absolute inset-0 h-full w-full bg-black/70 backdrop-blur-sm"
       />
-
-      {/* SIDEBAR */}
       <aside
         role="dialog"
         aria-modal="true"
         aria-label="Shopping cart"
-        className="absolute inset-y-0 right-0 flex h-full w-full min-w-0 max-w-md flex-col overflow-hidden border-l border-white/10 bg-[#101622] text-white shadow-2xl"
+        className="absolute inset-y-0 right-0 flex h-[100dvh] w-full min-w-0 max-w-md flex-col overflow-hidden border-l border-white/10 bg-[#101622] text-white shadow-2xl"
       >
-        {/* HEADER */}
         <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 px-4 py-4 sm:px-6 sm:py-6">
           <div className="min-w-0">
             <h2 className="text-xl font-bold sm:text-2xl">Shopping Cart</h2>
-
             <p className="mt-1 text-xs text-gray-400 sm:text-sm">
               {totalQuantity} items in your cart
             </p>
           </div>
-
           <button
             type="button"
             onClick={onClose}
@@ -140,7 +119,25 @@ export default function CartSidebar({
           </button>
         </div>
 
-        {/* CART PRODUCTS */}
+        {items.length > 0 && !loading && (
+          <div className="flex shrink-0 justify-end border-b border-white/10 px-4 py-3 sm:px-6">
+            <button
+              type="button"
+              onClick={onClearAll}
+              disabled={isBusy}
+              className="inline-flex items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-400 transition hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {clearingAll ? (
+                <>
+                  <ButtonSpinner /> Clearing...
+                </>
+              ) : (
+                "🗑 Clear All"
+              )}
+            </button>
+          </div>
+        )}
+
         <div className="min-h-0 min-w-0 flex-1 space-y-4 overflow-y-auto overscroll-contain p-3 sm:p-6">
           {error && (
             <p
@@ -150,7 +147,6 @@ export default function CartSidebar({
               {error}
             </p>
           )}
-
           {loading ? (
             <div
               role="status"
@@ -158,12 +154,10 @@ export default function CartSidebar({
             >
               <div className="relative flex h-16 w-16 items-center justify-center">
                 <div className="absolute inset-0 animate-spin rounded-full border-4 border-blue-500/10 border-t-blue-500" />
-
                 <span className="text-lg font-black text-white">
                   T<span className="text-blue-500">Z</span>
                 </span>
               </div>
-
               <p className="animate-pulse text-sm text-gray-400">
                 Loading your cart...
               </p>
@@ -171,13 +165,10 @@ export default function CartSidebar({
           ) : items.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center px-2 text-center">
               <span className="text-6xl">🛒</span>
-
               <h3 className="mt-5 text-xl font-semibold">Your cart is empty</h3>
-
               <p className="mt-2 text-sm text-gray-400">
                 Add some products to get started.
               </p>
-
               <button
                 type="button"
                 onClick={onClose}
@@ -189,68 +180,56 @@ export default function CartSidebar({
           ) : (
             items.map((item) => {
               const isUpdating = updatingId === item.id;
-
               const increasing =
                 isUpdating &&
                 action?.id === item.id &&
                 action.type === "increase";
-
               const decreasing =
                 isUpdating &&
                 action?.id === item.id &&
                 action.type === "decrease";
-
               const removing =
                 isUpdating &&
                 action?.id === item.id &&
                 action.type === "remove";
-
               return (
                 <div
                   key={item.id}
                   className="min-w-0 overflow-hidden rounded-2xl border border-white/10 bg-[#090d16] p-3 sm:p-4"
                 >
-                  {/* PRODUCT INFORMATION */}
                   <div className="flex min-w-0 gap-3 sm:gap-4">
                     <img
                       src={item.product.imageUrl}
                       alt={item.product.name}
-                      className="h-20 w-20 shrink-0 rounded-xl bg-white object-contain p-2 sm:h-24 sm:w-24"
+                      className="h-16 w-16 shrink-0 rounded-xl bg-white object-contain p-2 min-[380px]:h-20 min-[380px]:w-20 sm:h-24 sm:w-24"
                     />
-
                     <div className="min-w-0 flex-1">
                       <h3 className="line-clamp-2 break-words text-sm font-semibold text-white">
                         {item.product.name}
                       </h3>
-
                       <p className="mt-1 truncate text-xs text-gray-500">
                         {item.product.brand}
                       </p>
-
                       <p className="mt-2 break-words text-sm font-bold text-blue-400">
                         ₾{item.totalPrice.toLocaleString()}
                       </p>
-
                       <button
                         type="button"
                         onClick={() => handleRemove(item)}
                         disabled={isBusy}
-                        className="mt-2 inline-flex min-h-5 items-center gap-2 text-xs text-red-400 transition hover:text-red-300 disabled:opacity-50"
+                        className="mt-2 inline-flex items-center gap-2 rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-400 transition hover:bg-red-500/20 disabled:opacity-50"
                       >
                         {removing ? (
                           <>
-                            <ButtonSpinner />
-                            Removing...
+                            <ButtonSpinner /> Removing...
                           </>
                         ) : (
-                          "Remove"
+                          "🗑 Remove"
                         )}
                       </button>
                     </div>
                   </div>
-
-                  {/* QUANTITY AND PRICE */}
-                  <div className="mt-4 flex min-w-0 flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-4">
+                  <div className="mt-4 flex min-w-0 flex-wrap items-center justify-between gap-2 border-t border-white/10 pt-4">
                     <div className="flex shrink-0 items-center rounded-xl border border-white/10 bg-white/5">
                       <button
                         type="button"
@@ -261,11 +240,9 @@ export default function CartSidebar({
                       >
                         {decreasing ? <ButtonSpinner /> : "−"}
                       </button>
-
                       <span className="min-w-8 text-center text-sm font-semibold">
                         {item.quantity}
                       </span>
-
                       <button
                         type="button"
                         onClick={() => handleIncrease(item)}
@@ -276,7 +253,6 @@ export default function CartSidebar({
                         {increasing ? <ButtonSpinner /> : "+"}
                       </button>
                     </div>
-
                     <p className="min-w-0 break-words font-bold text-white">
                       ₾{item.totalPrice.toLocaleString()}
                     </p>
@@ -286,22 +262,17 @@ export default function CartSidebar({
             })
           )}
         </div>
-
-        {/* FOOTER */}
         <div className="shrink-0 border-t border-white/10 bg-[#0c111d] p-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:p-6">
           <div className="mb-3 flex items-center justify-between text-sm text-gray-400">
             <span>Items</span>
             <span>{totalQuantity}</span>
           </div>
-
           <div className="mb-6 flex min-w-0 items-center justify-between gap-3">
             <span className="text-lg font-semibold">Total</span>
-
             <span className="min-w-0 break-words text-right text-xl font-black text-blue-400 sm:text-2xl">
               ₾{totalPrice.toLocaleString()}
             </span>
           </div>
-
           {checkoutSuccess && (
             <div
               role="status"
@@ -310,34 +281,25 @@ export default function CartSidebar({
               <p className="font-semibold text-emerald-400">
                 Checkout Successful!
               </p>
-
               <p className="mt-1 break-words text-sm text-gray-300">
                 {checkoutSuccess}
               </p>
             </div>
           )}
-
           <button
             type="button"
             onClick={onCheckout}
-            disabled={
-              checkoutLoading ||
-              loading ||
-              updatingId !== null ||
-              items.length === 0
-            }
+            disabled={isBusy || loading || items.length === 0}
             className="flex w-full items-center justify-center gap-3 rounded-xl bg-blue-600 px-3 py-4 text-center text-sm font-bold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50 sm:text-base"
           >
             {checkoutLoading ? (
               <>
-                <ButtonSpinner />
-                Processing Checkout...
+                <ButtonSpinner /> Processing Checkout...
               </>
             ) : (
               "Proceed to Checkout"
             )}
           </button>
-
           <button
             type="button"
             onClick={onClose}

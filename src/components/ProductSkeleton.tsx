@@ -1,4 +1,3 @@
-
 export default function ProductSkeleton() {
   return (
     <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#101622] p-5">

@@ -14,7 +14,7 @@ export default function Categories({
   return (
     <section
       id="categories"
-      className="w-full min-w-0 px-4 py-10 sm:px-6 sm:py-12 md:px-12 md:py-16 lg:px-20"
+      className="w-full min-w-0 px-4 py-10 sm:px-6 sm:py-12 md:py-16 lg:px-8"
     >
       <div className="mx-auto w-full min-w-0 max-w-7xl">
         {/* SECTION HEADER */}
@@ -39,7 +39,7 @@ export default function Categories({
             type="button"
             onClick={() => onSelectCategory("All")}
             aria-pressed={selectedCategory === "All"}
-            className={`min-w-0 overflow-hidden rounded-xl border text-left transition ${
+            className={`h-full min-w-0 overflow-hidden rounded-xl border text-left transition duration-300 hover:-translate-y-1 ${
               selectedCategory === "All"
                 ? "border-blue-500 bg-blue-600 text-white"
                 : "border-white/10 bg-white/5 text-gray-300 hover:border-blue-500"
@@ -61,7 +61,7 @@ export default function Categories({
               type="button"
               onClick={() => onSelectCategory(category.name)}
               aria-pressed={selectedCategory === category.name}
-              className={`min-w-0 overflow-hidden rounded-xl border text-left transition ${
+              className={`h-full min-w-0 overflow-hidden rounded-xl border text-left transition duration-300 hover:-translate-y-1 ${
                 selectedCategory === category.name
                   ? "border-blue-500 bg-blue-600 text-white"
                   : "border-white/10 bg-white/5 text-gray-300 hover:border-blue-500"

@@ -11,6 +11,8 @@ type WishlistSidebarProps = {
   updatingFavoriteId: number | null;
   addingToCartId?: number | null;
   onRemove: (product: Product) => void;
+  onClearAll: () => void;
+  clearingAll: boolean;
   onAddToCart: (product: Product) => void;
 };
 
@@ -23,15 +25,15 @@ export default function WishlistSidebar({
   updatingFavoriteId,
   addingToCartId = null,
   onRemove,
+  onClearAll,
+  clearingAll,
   onAddToCart,
 }: WishlistSidebarProps) {
   useEffect(() => {
     if (!isOpen) return;
 
     function handleEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        onClose();
-      }
+      if (event.key === "Escape") onClose();
     }
 
     window.addEventListener("keydown", handleEscape);
@@ -40,6 +42,17 @@ export default function WishlistSidebar({
       window.removeEventListener("keydown", handleEscape);
     };
   }, [isOpen, onClose]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -58,13 +71,12 @@ export default function WishlistSidebar({
         role="dialog"
         aria-modal="true"
         aria-label="Wishlist"
-        className="absolute inset-y-0 right-0 flex h-full w-full min-w-0 max-w-md flex-col overflow-hidden border-l border-white/10 bg-[#101622] text-white shadow-2xl"
+        className="absolute inset-y-0 right-0 flex h-[100dvh] w-full min-w-0 max-w-md flex-col overflow-hidden border-l border-white/10 bg-[#101622] text-white shadow-2xl"
       >
         {/* HEADER */}
         <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 px-4 py-4 sm:px-6 sm:py-6">
           <div className="min-w-0">
             <h2 className="text-xl font-bold sm:text-2xl">My Wishlist</h2>
-
             <p className="mt-1 text-xs text-gray-400 sm:text-sm">
               {products.length} favorite products
             </p>
@@ -80,7 +92,28 @@ export default function WishlistSidebar({
           </button>
         </div>
 
-        {/* WISHLIST PRODUCTS */}
+        {/* CLEAR ALL */}
+        {products.length > 0 && !loading && (
+          <div className="flex shrink-0 justify-end border-b border-white/10 px-4 py-3 sm:px-6">
+            <button
+              type="button"
+              onClick={onClearAll}
+              disabled={clearingAll || updatingFavoriteId !== null}
+              className="inline-flex items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-400 transition hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {clearingAll ? (
+                <>
+                  <ButtonSpinner />
+                  Clearing...
+                </>
+              ) : (
+                "🗑 Clear All"
+              )}
+            </button>
+          </div>
+        )}
+
+        {/* PRODUCTS */}
         <div className="min-h-0 min-w-0 flex-1 space-y-4 overflow-y-auto overscroll-contain p-3 sm:p-6">
           {error && (
             <p
@@ -98,12 +131,10 @@ export default function WishlistSidebar({
             >
               <div className="relative flex h-16 w-16 items-center justify-center">
                 <div className="absolute inset-0 animate-spin rounded-full border-4 border-blue-500/10 border-t-blue-500" />
-
                 <span className="text-lg font-black text-white">
                   T<span className="text-blue-500">Z</span>
                 </span>
               </div>
-
               <p className="animate-pulse text-sm text-gray-400">
                 Loading your wishlist...
               </p>
@@ -111,15 +142,12 @@ export default function WishlistSidebar({
           ) : products.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center px-2 text-center">
               <span className="text-6xl">♡</span>
-
               <h3 className="mt-5 text-xl font-semibold">
                 Your wishlist is empty
               </h3>
-
               <p className="mt-2 text-sm text-gray-400">
                 Save products you love for later.
               </p>
-
               <button
                 type="button"
                 onClick={onClose}
@@ -131,7 +159,6 @@ export default function WishlistSidebar({
           ) : (
             products.map((product) => {
               const isRemoving = updatingFavoriteId === product.id;
-
               const isAdding = addingToCartId === product.id;
 
               return (
@@ -144,7 +171,7 @@ export default function WishlistSidebar({
                     <img
                       src={product.imageUrl}
                       alt={product.name}
-                      className="h-20 w-20 shrink-0 rounded-xl bg-white object-contain p-2 sm:h-24 sm:w-24"
+                      className="h-16 w-16 shrink-0 rounded-xl bg-white object-contain p-2 min-[380px]:h-20 min-[380px]:w-20 sm:h-24 sm:w-24"
                     />
 
                     <div className="min-w-0 flex-1">
@@ -160,11 +187,12 @@ export default function WishlistSidebar({
                         ₾{product.price.toLocaleString()}
                       </p>
 
+                      {/* REMOVE */}
                       <button
                         type="button"
                         onClick={() => onRemove(product)}
-                        disabled={updatingFavoriteId !== null}
-                        className="mt-2 inline-flex min-h-5 items-center gap-2 text-xs text-red-400 transition hover:text-red-300 disabled:opacity-50"
+                        disabled={updatingFavoriteId !== null || clearingAll}
+                        className="mt-2 inline-flex items-center gap-2 rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-400 transition hover:bg-red-500/20 disabled:opacity-50"
                       >
                         {isRemoving ? (
                           <>
@@ -172,14 +200,14 @@ export default function WishlistSidebar({
                             Removing...
                           </>
                         ) : (
-                          "Remove"
+                          "🗑 Remove"
                         )}
                       </button>
                     </div>
                   </div>
 
                   {/* STOCK AND ADD TO CART */}
-                  <div className="mt-4 flex min-w-0 flex-col gap-3 border-t border-white/10 pt-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="mt-4 flex min-w-0 flex-col gap-3 border-t border-white/10 pt-4">
                     <span
                       className={`text-xs ${
                         product.stock > 0 ? "text-emerald-400" : "text-red-400"
@@ -192,9 +220,13 @@ export default function WishlistSidebar({
 
                     <button
                       type="button"
-                      disabled={product.stock <= 0 || addingToCartId !== null}
+                      disabled={
+                        product.stock <= 0 ||
+                        addingToCartId !== null ||
+                        clearingAll
+                      }
                       onClick={() => onAddToCart(product)}
-                      className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {isAdding ? (
                         <>
