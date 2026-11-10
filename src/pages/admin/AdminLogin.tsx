@@ -132,18 +132,6 @@ export default function AdminLogin() {
               {loading ? "Signing In..." : "Sign In"}
             </button>
           </form>
-
-          <div className="mt-7 border-t border-white/10 pt-6 text-center">
-            <p className="text-sm text-gray-400">
-              Need an admin account?{" "}
-              <Link
-                to="/admin/register"
-                className="font-semibold text-blue-400 hover:text-blue-300"
-              >
-                Register
-              </Link>
-            </p>
-          </div>
         </div>
 
         <Link

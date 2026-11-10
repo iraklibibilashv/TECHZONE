@@ -1,6 +1,9 @@
 const API_URL = import.meta.env.VITE_API_URL;
 const API_KEY = import.meta.env.VITE_API_KEY;
 
+import { handleApiError } from "../lib/apiError";
+import { getAdminToken, isAdminAuthenticated, adminLogout } from "./adminAuth";
+
 export type AdminCredentials = {
   login: string;
   password: string;
@@ -21,24 +24,27 @@ async function adminRequest(
   endpoint: string,
   credentials: AdminCredentials,
 ): Promise<unknown> {
-  const response = await fetch(`${API_URL}${endpoint}`, {
-    method: "POST",
-    headers: getAdminHeaders(),
-    body: JSON.stringify(credentials),
-  });
+  let response: Response;
 
-  const result = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    throw new Error(
-      result?.detail ||
-        result?.message ||
-        result?.title ||
-        "Something went wrong.",
-    );
+  try {
+    response = await fetch(`${API_URL}${endpoint}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        "X-STEP-KEY": API_KEY,
+      },
+      body: JSON.stringify(credentials),
+    });
+  } catch {
+    throw new Error("Network error. Please check your internet connection.");
   }
 
-  return result;
+  if (!response.ok) {
+    await handleApiError(response, "Admin authentication failed.");
+  }
+
+  return response.json().catch(() => null);
 }
 
 export function adminLogin(credentials: AdminCredentials) {
@@ -80,24 +86,36 @@ async function adminCrudRequest<T>(
   method: "POST" | "PUT" | "DELETE",
   body?: unknown,
 ): Promise<T> {
-  const response = await fetch(`${API_URL}${endpoint}`, {
-    method,
-    headers: getAdminHeaders(),
-    ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
-  });
+  const token = getAdminToken();
+
+  if (!token || !isAdminAuthenticated()) {
+    adminLogout();
+    throw new Error("Admin session expired. Please log in again.");
+  }
+
+  let response: Response;
+
+  try {
+    response = await fetch(`${API_URL}${endpoint}`, {
+      method,
+      headers: getAdminHeaders(),
+      ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+    });
+  } catch {
+    throw new Error("Network error. Please check your internet connection.");
+  }
+
+  if (response.status === 401) {
+    adminLogout();
+  }
+
+  if (!response.ok) {
+    await handleApiError(response, "Admin request failed.");
+  }
 
   const result = await response.json().catch(() => null);
 
-  if (!response.ok) {
-    throw new Error(
-      result?.detail ||
-        result?.message ||
-        result?.title ||
-        "Admin request failed.",
-    );
-  }
-
-  return result?.data ?? result;
+  return (result?.data ?? result) as T;
 }
 
 // CATEGORIES

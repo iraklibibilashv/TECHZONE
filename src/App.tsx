@@ -10,7 +10,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCart } from "./hooks/useCart";
 import { useFavorites } from "./hooks/useFavorites";
-import { Routes, Route, useNavigate } from "react-router-dom";
+import { Routes, Route,Navigate , useNavigate } from "react-router-dom";
 import Header from "./components/Header";
 import Hero from "./components/Hero";
 import Categories from "./components/Categories";
@@ -56,7 +56,6 @@ const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
 const AdminCategories = lazy(() => import("./pages/admin/AdminCategories"));
 const AdminProducts = lazy(() => import("./pages/admin/AdminProducts"));
 const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
-const AdminRegister = lazy(() => import("./pages/admin/AdminRegister"));
 const AdminInventory = lazy(() => import("./pages/admin/AdminInventory"));
 const CompareProducts = lazy(() => import("./pages/CompareProducts"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -679,8 +678,6 @@ function HomePage({ isLoggedIn, onLogout }: HomePageProps) {
         onWishlistClick={openWishlist}
       />
 
-      
-
       <main className="w-full min-w-0">
         <Hero onViewAllProducts={handleViewAllProducts} />
         <Categories
@@ -731,7 +728,6 @@ function HomePage({ isLoggedIn, onLogout }: HomePageProps) {
                     Show More ↓
                   </button>
                 )}
-                
               </div>
             )}
           </div>
@@ -848,7 +844,10 @@ export default function App() {
           />
           {/* ADMIN AUTH */}
           <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin/register" element={<AdminRegister />} />
+          <Route
+            path="/admin/register"
+            element={<Navigate to="/admin/login" replace />}
+          />
           {/* PROTECTED ADMIN ROUTES */}
           <Route element={<ProtectedAdminRoute />}>
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
