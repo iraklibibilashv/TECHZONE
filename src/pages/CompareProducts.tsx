@@ -1,8 +1,113 @@
 import { Link } from "react-router-dom";
 import { useCompare } from "../context/CompareContext";
+import type { Product } from "../types/product";
+
+type CompareField = "price" | "rating" | "stock";
+
+type ComparisonResult = "better" | "worse" | "equal";
+
+function getComparisonResult(
+  product: Product,
+  products: Product[],
+  field: CompareField,
+): ComparisonResult {
+  if (products.length < 2) return "equal";
+
+  const values = products.map((p) => p[field]);
+  const currentValue = product[field];
+
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+
+  if (min === max) return "equal";
+
+  if (field === "price") {
+    if (currentValue === min) return "better";
+    if (currentValue === max) return "worse";
+  } else {
+    if (currentValue === max) return "better";
+    if (currentValue === min) return "worse";
+  }
+
+  // Middle value when comparing 3 products
+  return "equal";
+}
+
+function ComparisonValue({
+  product,
+  products,
+  field,
+}: {
+  product: Product;
+  products: Product[];
+  field: CompareField;
+}) {
+  const result = getComparisonResult(product, products, field);
+
+  const value =
+    field === "price"
+      ? `₾${product.price.toLocaleString("en-US")}`
+      : field === "rating"
+        ? `★ ${product.rating}`
+        : product.stock > 0
+          ? `${product.stock} available`
+          : "Out of Stock";
+
+  const colorClass =
+    result === "better"
+      ? "text-emerald-400"
+      : result === "worse"
+        ? "text-red-400"
+        : "text-gray-300";
+
+  const arrow =
+    result === "equal"
+      ? "−"
+      : field === "price"
+        ? result === "better"
+          ? "↓"
+          : "↑"
+        : result === "better"
+          ? "↑"
+          : "↓";
+
+  return (
+    <span
+      className={`inline-flex max-w-full flex-wrap items-center justify-end gap-2 font-semibold ${colorClass}`}
+      title={
+        result === "better"
+          ? "Best value among compared products"
+          : result === "worse"
+            ? "Lowest-ranked value among compared products"
+            : "Equal or intermediate value"
+      }
+    >
+      <span aria-hidden="true" className="text-lg font-black">
+        {arrow}
+      </span>
+      <span>{value}</span>
+    </span>
+  );
+}
 
 export default function CompareProducts() {
   const { compareProducts, removeFromCompare, clearCompare } = useCompare();
+
+  const rows: {
+    label: string;
+    field?: CompareField;
+    render?: (product: Product) => string;
+  }[] = [
+    { label: "Price", field: "price" },
+    { label: "Brand", render: (p) => p.brand },
+    { label: "Model", render: (p) => p.model },
+    {
+      label: "Category",
+      render: (p) => p.category?.name ?? "N/A",
+    },
+    { label: "Rating", field: "rating" },
+    { label: "Stock", field: "stock" },
+  ];
 
   return (
     <main className="min-h-screen w-full min-w-0 bg-[#090d16] px-4 py-8 text-white sm:px-5 sm:py-12">
@@ -59,6 +164,21 @@ export default function CompareProducts() {
           </div>
         ) : (
           <>
+            {/* COMPARISON LEGEND */}
+            {compareProducts.length >= 2 && (
+              <div className="mb-5 flex flex-wrap items-center gap-x-5 gap-y-2 rounded-xl border border-white/10 bg-[#101622] px-4 py-3 text-xs sm:text-sm">
+                <span className="font-medium text-emerald-400">
+                  ↑↓ Better value
+                </span>
+
+                <span className="font-medium text-red-400">↑↓ Worse value</span>
+
+                <span className="font-medium text-gray-400">
+                  − Equal / Middle
+                </span>
+              </div>
+            )}
+
             {/* MOBILE / TABLET */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:hidden">
               {compareProducts.map((product) => (
@@ -84,63 +204,30 @@ export default function CompareProducts() {
 
                   {/* PRODUCT SPECIFICATIONS */}
                   <div className="mt-5 flex-1 divide-y divide-white/10">
-                    <div className="flex min-w-0 items-start justify-between gap-3 py-3">
-                      <span className="shrink-0 text-sm text-gray-400">
-                        Price
-                      </span>
-                      <span className="min-w-0 break-words text-right font-bold text-blue-400">
-                        ₾{product.price.toLocaleString("en-US")}
-                      </span>
-                    </div>
-
-                    <div className="flex min-w-0 items-start justify-between gap-3 py-3">
-                      <span className="shrink-0 text-sm text-gray-400">
-                        Brand
-                      </span>
-                      <span className="min-w-0 break-words text-right text-sm">
-                        {product.brand}
-                      </span>
-                    </div>
-
-                    <div className="flex min-w-0 items-start justify-between gap-3 py-3">
-                      <span className="shrink-0 text-sm text-gray-400">
-                        Model
-                      </span>
-                      <span className="min-w-0 break-words text-right text-sm">
-                        {product.model}
-                      </span>
-                    </div>
-
-                    <div className="flex min-w-0 items-start justify-between gap-3 py-3">
-                      <span className="shrink-0 text-sm text-gray-400">
-                        Category
-                      </span>
-                      <span className="min-w-0 break-words text-right text-sm">
-                        {product.category?.name ?? "N/A"}
-                      </span>
-                    </div>
-
-                    <div className="flex min-w-0 items-start justify-between gap-3 py-3">
-                      <span className="text-sm text-gray-400">Rating</span>
-                      <span className="text-sm text-yellow-400">
-                        ★ {product.rating}
-                      </span>
-                    </div>
-
-                    <div className="flex min-w-0 items-start justify-between gap-3 py-3">
-                      <span className="text-sm text-gray-400">Stock</span>
-                      <span
-                        className={`text-right text-sm ${
-                          product.stock > 0
-                            ? "text-emerald-400"
-                            : "text-red-400"
-                        }`}
+                    {rows.map((row) => (
+                      <div
+                        key={row.label}
+                        className="flex min-w-0 items-start justify-between gap-3 py-3"
                       >
-                        {product.stock > 0
-                          ? `${product.stock} available`
-                          : "Out of Stock"}
-                      </span>
-                    </div>
+                        <span className="shrink-0 text-sm text-gray-400">
+                          {row.label}
+                        </span>
+
+                        {row.field ? (
+                          <div className="min-w-0 text-right text-sm">
+                            <ComparisonValue
+                              product={product}
+                              products={compareProducts}
+                              field={row.field}
+                            />
+                          </div>
+                        ) : (
+                          <span className="min-w-0 break-words text-right text-sm text-gray-200">
+                            {row.render?.(product)}
+                          </span>
+                        )}
+                      </div>
+                    ))}
                   </div>
 
                   {/* ACTION BUTTONS */}
@@ -209,36 +296,7 @@ export default function CompareProducts() {
                 </thead>
 
                 <tbody>
-                  {[
-                    {
-                      label: "Price",
-                      render: (p: (typeof compareProducts)[number]) =>
-                        `₾${p.price.toLocaleString("en-US")}`,
-                    },
-                    {
-                      label: "Brand",
-                      render: (p: (typeof compareProducts)[number]) => p.brand,
-                    },
-                    {
-                      label: "Model",
-                      render: (p: (typeof compareProducts)[number]) => p.model,
-                    },
-                    {
-                      label: "Category",
-                      render: (p: (typeof compareProducts)[number]) =>
-                        p.category?.name ?? "N/A",
-                    },
-                    {
-                      label: "Rating",
-                      render: (p: (typeof compareProducts)[number]) =>
-                        `★ ${p.rating}`,
-                    },
-                    {
-                      label: "Stock",
-                      render: (p: (typeof compareProducts)[number]) =>
-                        p.stock > 0 ? `${p.stock} available` : "Out of Stock",
-                    },
-                  ].map((row) => (
+                  {rows.map((row) => (
                     <tr key={row.label}>
                       <th className="break-words border-b border-white/10 p-4 text-sm font-semibold text-gray-400 xl:p-5">
                         {row.label}
@@ -249,7 +307,15 @@ export default function CompareProducts() {
                           key={product.id}
                           className="break-words border-b border-white/10 p-4 text-sm text-gray-200 xl:p-5"
                         >
-                          {row.render(product)}
+                          {row.field ? (
+                            <ComparisonValue
+                              product={product}
+                              products={compareProducts}
+                              field={row.field}
+                            />
+                          ) : (
+                            row.render?.(product)
+                          )}
                         </td>
                       ))}
                     </tr>
